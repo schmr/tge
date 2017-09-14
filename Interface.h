@@ -40,7 +40,7 @@ inheritance) is non-virtual, results in a clean compiles but severe run-time
 errors.  For now, put Prints<> and Comps<> first. */
 
 /*###########################################################################*/
-/* Detects objects with an 'ostream & << const T &' operator for their
+/* Detects objects with an 'std::ostream & << const T &' operator for their
 immediate type and those which are explicitly printable (inherit from Prints<>
 at some stage of the class DAG.  Allows printing of such objects. */
 
@@ -55,33 +55,33 @@ class PrintsBase<T, true, false> : public virtual PrintsRoot {
 
 template <typename T>
 class PrintsBase<T, true, true> : public virtual PrintsRoot {
-	public: virtual void print_to(ostream & os) const;
+	public: virtual void print_to(std::ostream & os) const;
 	protected: ~PrintsBase() {}
 };
 
 template <typename T, bool PROVIDE>
-	ostream & operator<<(ostream & os, const PrintsBase<T, true, PROVIDE> & p);
+	std::ostream & operator<<(std::ostream & os, const PrintsBase<T, true, PROVIDE> & p);
 
 /* Specialize on PROVIDE == false to make re-inheriting interface useful
 (once).  More than once will require operator<< to be defined again. */
 
 template <typename T>
-	ostream & operator<<(ostream & os, const PrintsBase<T, true, false> & p);
+	std::ostream & operator<<(std::ostream & os, const PrintsBase<T, true, false> & p);
 
 namespace PRINTABLE_NS_ {
 	struct NO { char c[10]; };
-	typedef ostream & YES;
+	typedef std::ostream & YES;
 
 	template <typename T2>
-		NO operator<<(ostream &, const T2 &);
+		NO operator<<(std::ostream &, const T2 &);
 
 	template <typename T>
 	struct printable {
-		enum { result = (same_or_derived<T, PrintsRoot>::result ||
+		enum { result = (rstd::same_or_derived<T, PrintsRoot>::result ||
 			sizeof(YES) ==
-			sizeof(make_instance<ostream &>() << make_instance<T>())) };
+			sizeof(rstd::make_instance<std::ostream &>() << rstd::make_instance<T>())) };
 	};
-};
+}
 
 /* Uses print_to function exists if DEP can be printed.  Provides print_to
 function based on print_to_default if PROVIDE is true. */
@@ -95,11 +95,11 @@ public PrintsBase<T, PRINTABLE_NS_::printable<DEP>::result, PROVIDE> {
 /*===========================================================================*/
 // Prints simple containers.
 template <typename InIter>
-	void print_cont(InIter first, InIter last, ostream & os = cout,
+	void print_cont(InIter first, InIter last, std::ostream & os = std::cout,
 	const char * sep = " ");
 
 template <typename Container>
-	void print_cont(const Container & c, ostream & os, const char * sep = " ");
+	void print_cont(const Container & c, std::ostream & os, const char * sep = " ");
 
 /*===========================================================================*/
 /* LESS will always be less than 0.  EQ will always be 0.  GREATER will always
@@ -107,7 +107,7 @@ be greater than 0. */
 
 enum comp_type { LESS = -1, EQ = 0, GREATER = 1 };
 
-ostream & operator<<(ostream & os, comp_type c);
+std::ostream & operator<<(std::ostream & os, comp_type c);
 
 template <typename T> struct comp_func {
 	typedef comp_type (*func)(const T & a, const T & b);
@@ -140,11 +140,11 @@ namespace COMPARABLE_NS_ {
 
 	template <typename T>
 	struct comparable {
-		enum { result = (same_or_derived<T, CompsRoot>::result ||
-			(sizeof(YES) == sizeof(make_instance<T>() < make_instance<T>())) &&
-			(sizeof(YES) == sizeof(make_instance<T>() == make_instance<T>()))) };
+		enum { result = (rstd::same_or_derived<T, CompsRoot>::result ||
+			(sizeof(YES) == sizeof(rstd::make_instance<T>() < rstd::make_instance<T>())) &&
+			(sizeof(YES) == sizeof(rstd::make_instance<T>() == rstd::make_instance<T>()))) };
 	};
-};
+}
 
 template <typename T, typename DEP = int, bool PROVIDE = false>
 class Comps :
@@ -157,10 +157,10 @@ template <typename T>
 
 // Compare simple containers.
 template <typename I,
-typename comp_func<iterator_traits<I>::value_type>::func COMP>
+typename comp_func<std::iterator_traits<I>::value_type>::func COMP>
 	comp_type comp_cont(I first1, I last1, I first2, I last2);
 
-// Defaults to comp<iterator_traits<I>::value_type>
+// Defaults to comp<std::iterator_traits<I>::value_type>
 template <typename I>
 	comp_type comp_cont(I first1, I last1, I first2, I last2);
 
