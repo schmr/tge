@@ -1,4 +1,4 @@
-// Copyright 2000 by Robert Dick.
+// Copyright 2008 by Robert Dick.
 // All rights reserved.
 
 /*###########################################################################*/
@@ -21,6 +21,18 @@ RawGraph::vertex_offset(const_vertex_iterator x) const {
 inline RawGraph::edge_index
 RawGraph::edge_offset(const_edge_iterator x) const {
 	return x - edge_.begin();
+}
+
+/*===========================================================================*/
+inline RawGraph::vertex_index
+RawGraph::vertex_offset(const_reverse_vertex_iterator x) const {
+	return vertex_.rend() - x - 1;
+}
+
+/*===========================================================================*/
+inline RawGraph::edge_index
+RawGraph::edge_offset(const_reverse_edge_iterator x) const {
+	return edge_.rend() - x - 1;
 }
 
 /*===========================================================================*/
@@ -54,8 +66,7 @@ RawGraph::edge(const edge_index i) const {
 }
 
 /*===========================================================================*/
-inline
-RawGraph::edge_type::edge_type(const vertex_index from_i,
+inline RawGraph::edge_type::edge_type(const vertex_index from_i,
 const vertex_index to_i) :
 	from_(from_i),
 	to_(to_i)
@@ -78,14 +89,14 @@ RawGraph::vertex_index::operator--(int) {
 }
 
 /*===========================================================================*/
-inline RawGraph::vertex_index &
+inline RawGraph::vertex_index
 RawGraph::vertex_index::operator+=(const vertex_index i) {
 	index_ += i.index_;
 	return *this;
 }
 
 /*===========================================================================*/
-inline RawGraph::vertex_index &
+inline RawGraph::vertex_index
 RawGraph::vertex_index::operator-=(const vertex_index i) {
 	index_ -= i.index_;
 	return *this;
@@ -122,14 +133,14 @@ RawGraph::edge_index::operator--(int) {
 }
 
 /*===========================================================================*/
-inline RawGraph::edge_index &
+inline RawGraph::edge_index
 RawGraph::edge_index::operator+=(const edge_index i) {
 	index_ += i.index_;
 	return *this;
 }
 
 /*===========================================================================*/
-inline RawGraph::edge_index &
+inline RawGraph::edge_index
 RawGraph::edge_index::operator-=(const edge_index i) {
 	index_ -= i.index_;
 	return *this;
@@ -151,7 +162,7 @@ const RawGraph::edge_index & b) {
 
 /*###########################################################################*/
 template <typename V, typename E>
-Graph<V, E>::vertex_index
+typename Graph<V, E>::vertex_index
 Graph<V, E>::add_vertex(const V & data) {
 	v_data_.push_back(data);
 	return super::add_vertex();
@@ -159,7 +170,7 @@ Graph<V, E>::add_vertex(const V & data) {
 
 /*===========================================================================*/
 template <typename V, typename E>
-Graph<V, E>::edge_index
+typename Graph<V, E>::edge_index
 Graph<V, E>::add_edge(vertex_index from, vertex_index to,
 const E & data) {
 	e_data_.push_back(data);
@@ -170,14 +181,14 @@ const E & data) {
 template <typename V, typename E>
 void Graph<V, E>::erase_vertex(const vertex_index i) {
 	super::erase_vertex(i);
-	v_data_.erase(&v_data_[i]);
+	v_data_.erase(v_data_.begin() + i);
 }
 
 /*===========================================================================*/
 template <typename V, typename E>
 void Graph<V, E>::erase_edge(const edge_index i) {
 	super::erase_edge(i);
-	e_data_.erase(&e_data_[i]);
+	e_data_.erase(e_data_.begin() + i);
 }
 
 /*===========================================================================*/
@@ -221,7 +232,7 @@ void Graph<V, E>::self_check_deep() const {
 
 /*###########################################################################*/
 template <typename V, typename E>
-void Graph<V, E>::print_to_default(ostream & os) const {
+void Graph<V, E>::print_to_default(std::ostream & os) const {
 	super::print_to(os);
 
 	MAP(x, v_data_.size()) {
@@ -233,3 +244,41 @@ void Graph<V, E>::print_to_default(ostream & os) const {
 	}
 }
 
+/*===========================================================================*/
+template <typename V, typename E>
+void Graph<V, E>::print_to_vcg(std::ostream & os, const std::string & glab)
+const {
+	os << "graph: { label: \"" << glab <<
+		"\"\n\tdisplay_edge_labels: yes\n\n";
+
+	MAP(v, size_vertex()) {
+		os << "\tnode: { title: \"" << v << "\" label: \"";
+		print_if_possible(os, (*this)[v], "");
+		os << "\" ";
+
+		const_vertex_iterator vi = vertex(v);
+
+		if (! vi->size_in()) {
+			os << "color: lightgreen";
+		} else if (! vi->size_out()) {
+			os << "color: lightred";
+		} else {
+			os << "color: white";
+		}
+
+		os << " }\n";
+	}
+
+	os << "\n";
+
+	MAP(e, size_edge()) {
+		os << "\tedge: { thickness: 2 sourcename: \"";
+		print_if_possible(os, (*this)[edge(e)->from()], edge(e)->from());
+		os << "\" targetname: \"";
+		print_if_possible(os, (*this)[edge(e)->to()], edge(e)->to());
+		os << "\" " << "label: \"";
+		print_if_possible(os, (*this)(e), e);
+		os << "\" } \n";
+	}
+	os << "}\n";
+}

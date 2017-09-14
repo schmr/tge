@@ -1,4 +1,4 @@
-// Copyright 2000 by Robert Dick.
+// Copyright 2008 by Robert Dick.
 // All rights reserved.
 
 #ifndef GRAPH_H_
@@ -15,6 +15,7 @@
 
 #include <iosfwd>
 
+namespace rstd {
 /*###########################################################################*/
 // Base data-independent directed graph class.
 
@@ -29,43 +30,51 @@ class RawGraph :
 public:
 // Type safe indexes.
 
-	class vertex_index : public Prints<vertex_index> {
+	class vertex_index :
+		public Prints<vertex_index>,
+		public Comps<vertex_index>
+	{
 	public:
 		vertex_index(long indx) : index_(indx) {}
 		operator long() const { return index_; }
+		comp_type comp(const vertex_index & a) const;
 
 		vertex_index & operator++() { index_++; return *this; }
 		vertex_index operator++(int);
 		vertex_index & operator--() { index_--; return *this; }
 		vertex_index operator--(int);
-		vertex_index & operator+=(vertex_index i);
-		vertex_index & operator-=(vertex_index i);
-		void print_to(ostream & os) const { os << index_; }
+		vertex_index operator+=(vertex_index i);
+		vertex_index operator-=(vertex_index i);
+		void print_to(std::ostream & os) const { os << index_; }
 
 	private:
 			long index_;
 	};
 
-	class edge_index : public Prints<edge_index> {
+	class edge_index :
+		public Prints<edge_index>,
+		public Comps<edge_index>
+	{
 	public:
 		edge_index(long indx) : index_(indx) {}
 		operator long() const { return index_; }
+
+		comp_type comp(const edge_index & a) const;
 
 		edge_index & operator++() { index_++; return *this; }
 		edge_index operator++(int);
 		edge_index & operator--() { index_--; return *this; }
 		edge_index operator--(int);
-		edge_index & operator+=(edge_index i);
-		edge_index & operator-=(edge_index i);
-		void print_to(ostream & os) const { os << index_; }
+		edge_index operator+=(edge_index i);
+		edge_index operator-=(edge_index i);
+		void print_to(std::ostream & os) const { os << index_; }
 
 	private:
 			long index_;
 	};
 
 	class vertex_type :
-		public Prints<RawGraph::vertex_type>,
-		public Comps<RawGraph::vertex_type>
+		public Prints<RawGraph::vertex_type>
 	{
 		typedef RawGraph::vertex_type self;
 
@@ -79,20 +88,24 @@ public:
 		edge_index size_in() const { return in_.size(); }
 		edge_index in(long i) const { return in_[i]; }
 
+		const_edge_iterator begin_out() const { return out_.begin(); }
 		edge_iterator begin_out() { return out_.begin(); }
 		const_edge_iterator end_out() const { return out_.end(); }
+		edge_iterator end_out() { return out_.end(); }
 
+		const_edge_iterator begin_in() const { return in_.begin(); }
 		edge_iterator begin_in() { return in_.begin(); }
 		const_edge_iterator end_in() const { return in_.end(); }
+		edge_iterator end_in() { return in_.end(); }
 
-		void print_to(ostream & os) const;
+		void print_to(std::ostream & os) const;
 		comp_type comp(const self & a) const;
 
 	protected:
 			RVector<edge_index> out_;
 			RVector<edge_index> in_;
 
-		friend RawGraph;
+		friend class rstd::RawGraph;
 	};
 
 	class edge_type :
@@ -105,7 +118,7 @@ public:
 		vertex_index from() const { return from_; }
 		vertex_index to() const { return to_; }
 
-		void print_to(ostream & os) const;
+		void print_to(std::ostream & os) const;
 
 		comp_type comp(const self & et) const;
 
@@ -115,7 +128,7 @@ public:
 			vertex_index from_;
 			vertex_index to_;
 
-		friend RawGraph;
+		friend class rstd::RawGraph;
 	};
 
 private:
@@ -142,14 +155,14 @@ public:
 	typedef e_impl::const_reference const_edge_reference;
 
 // Construction
-	virtual ~RawGraph() throw() {}
+	virtual ~RawGraph() {}
 	RawGraph() : vertex_(), edge_() {}
 	virtual self & operator=(const self & a);
 
 // Interface
 	virtual void rswap(self & rg);
 	virtual self * clone() const { return new self(*this); }
-	virtual void print_to(ostream & os) const;
+	virtual void print_to(std::ostream & os) const;
 	virtual void self_check() const;
 	virtual void self_check_deep() const { self_check(); }
 
@@ -169,8 +182,13 @@ public:
 	edge_index size_edge() const;
 	vertex_index vertex_offset(const_vertex_iterator x) const;
 	edge_index edge_offset(const_edge_iterator x) const;
+	vertex_index vertex_offset(const_reverse_vertex_iterator x) const;
+	edge_index edge_offset(const_reverse_edge_iterator x) const;
 	vertex_index add_vertex();
 	edge_index add_edge(vertex_index from, vertex_index to);
+
+	virtual double vertex_weight(vertex_index v) const;
+	virtual double edge_weight(edge_index e) const;
 
 	edge_iterator edge_begin() { return edge_.begin(); }
 	const_edge_iterator edge_begin() const { return edge_.begin(); }
@@ -204,7 +222,7 @@ public:
 	bool connected(vertex_index start, bool reverse = false) const;
 
 // Checks if an edge exists between 2 nodes.
-	bool nodes_linked (vertex_index a, vertex_index b) const;
+	bool nodes_linked(vertex_index a, vertex_index b) const;
 
 // Returns a DFS-ordered RVector of vertex indices.
 	const RVector<vertex_index>
@@ -219,6 +237,10 @@ public:
 
 	const RVector<vertex_index>
 		bfs(RVector<vertex_index> start, bool reverse = false) const;
+
+// Return every vertex's parent vertex and shortest path distance
+	const RVector<std::pair<vertex_index, double> >
+		shortest_path(vertex_index start) const;
 
 // Returns a topological sort-ordered RVector of vertex indices.
 	const RVector<vertex_index> top_sort(vertex_index start,
@@ -237,6 +259,9 @@ public:
 
 	const RVector<int> max_depth(const RVector<vertex_index> & start,
 		bool reverse = false) const;
+
+		static const vertex_index INVALID_VINDEX;
+		static const edge_index INVALID_EINDEX;
 
 protected:
 	bool cyclic_recurse(RVector<big_bool> & visited,
@@ -306,8 +331,14 @@ public:
 	virtual void pack_memory();
 	virtual void clear();
 
+// Needs a graph label
+	virtual void print_to_vcg(std::ostream & os, const std::string & glab) const;
+
 // Final
-	void print_to_default(ostream & os) const;
+	void print_to_default(std::ostream & os) const;
+
+//	void set_v_data(vertex_index i, const V & data) const {v_data_[i](data);
+//			return;}
 
 	V & operator[](vertex_index i) { return v_data_[i]; }
 	const V & operator[](vertex_index i) const { return v_data_[i]; }
@@ -321,8 +352,16 @@ private:
 };
 
 /*===========================================================================*/
+class WGraph :	public Graph<double, double> {
+public:
+	virtual double vertex_weight(vertex_index v) const;
+	virtual double edge_weight(edge_index e) const;
+};
+
+/*===========================================================================*/
 void Graph_test();
 
 /*###########################################################################*/
 #include "Graph.cct"
+}
 #endif
