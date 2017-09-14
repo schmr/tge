@@ -5,7 +5,7 @@
 #define LEX_YACC_H_
 
 // This definition must come before including gram.tab.h
-#define YYSTYPE string *
+#define YYSTYPE std::string *
 
 #include "parse.h"
 #include "gram.tab.h"

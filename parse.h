@@ -17,10 +17,10 @@ extern int yytypedef_flag;
 extern int column;
 
 // interface functions
-void yytypedef_table_add(string str);
-char yytypedef_table_lookup(string str);
-void yypopulate_tree (string str, long n);
-void yyadd_whitespace (string str);
+void yytypedef_table_add(std::string str);
+char yytypedef_table_lookup(std::string str);
+void yypopulate_tree (std::string str, long n);
+void yyadd_whitespace (std::string str);
 
 #endif
 

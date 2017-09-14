@@ -5,8 +5,9 @@
 CC := g++
 TO := -o
 
-C_OPTS := -O0 -ffor-scope -ftemplate-depth-50 \
-  -DROB_DEBUG -ggdb -O0 -pedantic -I.
+#C_OPTS := -O0 -ffor-scope -ftemplate-depth-50 -std=c++98
+C_OPTS := -O0 -ffor-scope -ftemplate-depth-50 -std=c++98 \
+  -DROB_DEBUG -ggdb -O0 -pedantic -I. -Wno-deprecated
 
 L_OPTS := -lstdc++ -lm
 
@@ -31,24 +32,24 @@ LINK := $(CC) $(OPTS) $(L_OPTS)
 	@echo "***** Lexing -> $@"
 	@flex $*.l
 	mv lex.yy.c $*.cc
-	@$(COMPILE) $*.cc   
+	$(COMPILE) $*.cc   
 %.o : %.y
 	@echo "***** Yaccing -> $@"
 	bison -d $*.y
 	mv $*.tab.c $*.cc  
-	@$(COMPILE) $*.cc   
+	$(COMPILE) $*.cc   
 %.o : %.cc
 	@echo "***** Compiling -> $@"
-	@$(COMPILE) $(TO) $@ $<
+	$(COMPILE) $(TO) $@ $<
 
 %.d : %.cc
 	@echo "***** Depending -> $@"
-	@sh -ec '$(DEPENDS) $< | $(SED_DEPEND) > $@'
+	sh -ec '$(DEPENDS) $< | $(SED_DEPEND) > $@'
 
 tge: gram.o scan.o ArgPack.o database.o dbio.o fgraph.o function.o Graph.o Interface.o ktime.o main.o node.o parse.o RStd.o RString.o tree.o
 	$(REPORT)
 	@echo "***** Linking -> $@"
-	@$(LINK) $(TO) $@ $(filter %.o,$^)
+	$(LINK) $(TO) $@ $(filter %.o,$^)
 	@echo
 
 ArgPack.o: ArgPack.cc ArgPack.h RVector.h RStd.h RStd.cct Interface.h \
