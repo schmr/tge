@@ -1,0 +1,5 @@
+#!/usr/bin/env perl
+BEGIN{ $^W=1 }
+
+system("runme_large.sh");
+

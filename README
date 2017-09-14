@@ -1,0 +1,45 @@
+Overview: 
+--------- 
+This file contains a description of the motivation behind this tool,
+installation instructions, and a disclaimer.  It is important to read the
+disclaimer before compiling or using the task graph extraction tool.  The
+tool is provided AS-IS with no explicit or implied warranty with the hope
+that people in the research or other communities will find it useful.
+
+Motivation:
+-----------
+Embedded systems are becoming increasingly complicated, requiring more
+time for design. To alleviate this problem, more sophisticated design
+tools are necessary to aid the designer in his task. These tools are used
+from low-level physical synthesis to high-level hardware/software
+co-synthesis. While tools at the lower levels are rather mature, the tools
+at the HW/SW co-synthesis level are just being developed. Part of their
+limitations are that they often require input in the form of a task graph
+and embedded systems are often designed in languages such as C. Manual
+converting from C to task graphs is time-consuming, difficult and can
+cause errors. The task graph extraction tool aims to aid in solving this
+problem by automatically generating task graphs from C source code.
+
+
+Disclaimer:  
+----------- 
+We don't guarantee that the software will compile, work or even produce
+correct results. It is provided in good faith that it will be useful.
+Downloading this software indicates that you have agreed that we (the
+providers of the software) are not responsible for any damages caused
+(intentionally or unintentionally) by the use, compiling, downloading,
+and/or storage of this software.
+
+Installation:
+-------------
+Installation of this tool should be rather straightforward. It is only
+around 10,000 lines of code and doesn't require any outside libraries.
+
+1. Download package
+2. mkdir (target dir)
+3. cd (target dir)
+4. tar -xzvf (filename)
+5. Read README 
+6. make
+7. Complete documentation can be found in the docs directory
+8. Enjoy
