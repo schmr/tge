@@ -1,4 +1,4 @@
-// Copyright 2000 by Robert Dick.
+// Copyright 2008 by Robert Dick.
 // All rights reserved.
 
 /*###########################################################################*/
@@ -7,7 +7,7 @@ inline T &
 RVector<T>::operator[](size_type a) {
 #ifdef ROB_DEBUG
 	if (a >= size() || a < 0) {
-		cerr << "For datatype " << typeid(*this).name() << ": size = " <<
+		std::cerr << "For datatype " << typeid(*this).name() << ": size = " <<
 		  size() << ".  Reference = " << a << ".\n";
 		Rabort();
 	}
@@ -31,21 +31,21 @@ void RVector<T>::assign(InIter first, InIter last) {
 
 /*===========================================================================*/
 template <typename T>
-T *
-RVector<T>::insert(T * pos, const T & x) {
+typename RVector<T>::iterator
+RVector<T>::insert(iterator pos, const T & x) {
 	return impl_.insert(pos, x);
 }
 
 /*===========================================================================*/
 template <typename T> template <typename InIter>
-void RVector<T>::insert(T * pos, InIter first,
+void RVector<T>::insert(iterator pos, InIter first,
 InIter last) {
 	impl_.insert(pos, first, last);
 }
 
 /*===========================================================================*/
 template <typename T>
-void RVector<T>::insert(T * pos, size_type n, const T & x) {
+void RVector<T>::insert(iterator pos, size_type n, const T & x) {
 	impl_.insert(pos, n, x);
 }
 
@@ -96,9 +96,23 @@ MVector<DIM, T, INDEX>::operator[](const INDEX<DIM, IT> & indx) const {
 
 /*===========================================================================*/
 template <int DIM, typename T, template <int, typename> class INDEX>
-MVector<DIM, T, INDEX>::const_reference
+typename MVector<DIM, T, INDEX>::const_reference
 MVector<DIM, T, INDEX>::operator[](size_type a) const {
 	return super::operator[](a);
+}
+
+/*===========================================================================*/
+template <int DIM, typename T, template <int, typename> class INDEX>
+template <typename IT>
+T & MVector<DIM, T, INDEX>::dim_index(const IT * i) {
+	return (*this)[*i].dim_index(i + 1);
+}
+
+/*===========================================================================*/
+template <int DIM, typename T, template <int, typename> class INDEX>
+template <typename IT>
+const T & MVector<DIM, T, INDEX>::dim_index(const IT * i) const {
+	return (*this)[*i].dim_index(i + 1);
 }
 
 /*################################o##########################################*/

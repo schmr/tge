@@ -1,29 +1,19 @@
-// Copyright 2000 by Robert Dick.
+// Copyright 2008 by Robert Dick.
 // All rights reserved.
 
 #ifndef R_STD_H_
 #define R_STD_H_
 
+#include <iostream>
+
+namespace rstd {
 // Misc. debugging, type conversion, and control utilities.
 
 // Define ROB_DEBUG to turn on debugging.
 
-/* FIXME: When numeric_traits<> are in the library, change X_MAX, X_MIN, etc.
-
-FIXME: When the library supports the std namespace, use prefixes.
-
-FIXME: Turn on exception handling for IO when the compiler supports it --
-a number of operations with the potential to fail are not checked now.
-
-FIXME: At some point, this whole library should be put in a namespace of its
-own.  Do this after the standard library supports std::.
-*/
-
 /*###########################################################################*/
-#include <iostream>
-
-extern ostream cerrhex;
-extern ostream couthex;
+extern std::ostream cerrhex;
+extern std::ostream couthex;
 
 #undef PI
 const double PI = 3.14159265358979323846;
@@ -81,7 +71,7 @@ to read and maintain. */
 
 // Print position in code.
 void rpos(const char * file, int line);
-#define Rpos() rpos(__FILE__, __LINE__)
+#define Rpos() rstd::rpos(__FILE__, __LINE__)
 
 // Print position in code and abort after printing message.
 void rabort(const char * file, int line,
@@ -89,24 +79,24 @@ void rabort(const char * file, int line,
 
 void rexit(const char * message = "Exiting.\n");
 
-#define Rabort() rabort(__FILE__, __LINE__)
+#define Rabort() rstd::rabort(__FILE__, __LINE__)
 
 // Abort, printing position in code, if (! x).
 void rassert(bool x, const char * file, int line);
-#define Rassert(x) rassert((x), __FILE__, __LINE__)
+#define Rassert(x) rstd::rassert((x), __FILE__, __LINE__)
 
 inline void rconfirm(bool x, const char * message) { if (! x) rexit(message); }
 
 // Print variable name and contents.  For temporary debugging use only.
-#define Rdump(x) (cerr << #x << ": " << (x) << endl)
-#define Rdumphex(x) (cerrhex << #x << ": 0x" << (x) << endl)
+#define Rdump(x) (std::cerr << #x << ": " << (x) << std::endl)
+#define Rdumphex(x) (rstd::cerrhex << #x << ": 0x" << (x) << std::endl)
 
 template <bool> struct static_assert;
 template<> struct static_assert<true> { static_assert() {} };
 // No false definition.  Compile-time failure if assertion fails.
-#define STATIC_ASSERT(x) static_assert<(x)>()
+#define STATIC_ASSERT(x) rstd::static_assert<(x)>()
 
-template <int i>
+template <int I>
 struct int_to_type {
 	enum { value = I };
 };
@@ -133,7 +123,7 @@ struct conversion_exists {
 	enum { result =
 		(sizeof(conversion_exists_helper<B>::test(
 		make_instance<D>())) ==
-		sizeof(conversion_exists_helper<B>::YES)) };
+		sizeof(typename conversion_exists_helper<B>::YES)) };
 };
 
 template <typename A, typename B>
@@ -159,8 +149,8 @@ struct same_or_derived {
 #ifdef ROB_DEBUG
 
 #define RDEBUG(x) (x)
-#define RASSERT(x) rassert((x), __FILE__, __LINE__)
-#define RCONFIRM(x, y) rconfirm((x), (y))
+#define RASSERT(x) rstd::rassert((x), __FILE__, __LINE__)
+#define RCONFIRM(x, y) rstd::rconfirm((x), (y))
 #else
 
 #define RDEBUG(x) do {} while (0)
@@ -191,10 +181,11 @@ long to_signed(unsigned long x);
 unsigned to_unsigned(int x);
 unsigned long to_unsigned(long x);
 
-
 /*===========================================================================*/
 void RStd_test();
 
 /*###########################################################################*/
 #include "RStd.cct"
+}
+
 #endif

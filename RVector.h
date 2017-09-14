@@ -1,4 +1,4 @@
-// Copyright 2000 by Robert Dick.
+// Copyright 2008 by Robert Dick.
 // All rights reserved.
 
 #ifndef R_VECTOR_H_
@@ -15,8 +15,10 @@
 
 #include <iosfwd>
 #include <vector>
-#include <climits>
+#include <limits>
 #include <functional>
+
+namespace rstd {
 
 template <int, typename> class NoIndex;
 template <int, typename> class FVector;
@@ -36,7 +38,7 @@ class RVector :
 	public Swaps<RVector<T> >,
 	public SChecks<RVector<T> >
 {
-	typedef vector<T> impl;
+	typedef std::vector<T> impl;
 	typedef RVector<T> self;
 
 public:
@@ -57,7 +59,7 @@ public:
 	typedef typename impl::reverse_iterator reverse_iterator;	
 
 // Construction
-	virtual ~RVector() throw() {}
+	virtual ~RVector() {}
 	RVector() : impl_() {}
 	RVector(size_t n, const T & value) : impl_(n, value) {}
 	explicit RVector(size_type n) : impl_(n) {}
@@ -79,9 +81,9 @@ public:
 
 // Final
 	comp_type comp_default(const self & b) const;
-	void print_to_default(ostream & os) const { print_cont(*this, os, " "); }
+	void print_to_default(std::ostream & os) const { print_cont(*this, os, " "); }
 	size_type size() const { return static_cast<size_type>(impl_.size()); }
-	size_type max_size() const { return LONG_MAX; }
+	size_type max_size() const { return std::numeric_limits<size_type>::max(); }
 	T & operator[](size_type a);
 	const T & operator[](size_type a) const;	
 
@@ -96,7 +98,6 @@ public:
 	size_type capacity() const { return impl_.capacity(); }
 	bool empty() const { return impl_.empty(); }
 
-// FIXME: Compiler bug prevents 'using' for templates.
 	void assign(size_type n, const T & val) { impl_.assign(n, val); }
 
 	template <class InIter>
@@ -110,14 +111,13 @@ public:
 	void push_back(const_reference x) { impl_.push_back(x); }
 	void pop_back() { impl_.pop_back(); }
 
-// FIXME: Compiler bug prevents 'using' for templates.
-	T * insert(T * pos, const T & x);
-	T * insert(T * pos) { return impl_.insert(pos); }
+	iterator insert(iterator pos, const T & x);
+	T * insert(iterator pos) { return impl_.insert(pos); }
 
 	template <typename InIter>
-		void insert(T * pos, InIter first, InIter last);
+		void insert(iterator pos, InIter first, InIter last);
 
-	void insert(T * pos, size_type n, const T & x);
+	void insert(iterator pos, size_type n, const T & x);
 
 	iterator erase(iterator a) { return impl_.erase(a); }
 	iterator erase(iterator a, iterator b) { return impl_.erase(a, b); }
@@ -147,7 +147,7 @@ class MVector :
 	typedef typename super::const_reference const_reference;
 
 public:
-	virtual ~MVector() throw() {}
+	virtual ~MVector() {}
 
 	MVector() {}
 	MVector(size_t n, typename super::const_reference value);
@@ -171,17 +171,13 @@ public:
 	const_reference operator[](size_type a) const;
 
 private:
-// FIXME: Take this out-of-line when the compiler supports it.
 	template <typename IT>
-		T & dim_index(const IT * indx)
-		{ return (*this)[*indx].dim_index<IT>(indx + 1); }
+		T & dim_index(const IT * i);
 
-// FIXME: Take this out-of-line when the compiler supports it.
 	template <typename IT>
-		const T & dim_index(const IT * indx) const
-		{ return (*this)[*indx].dim_index<IT>(indx + 1); }
+		const T & dim_index(const IT * i) const;
 
-	friend MVector<DIM + 1, T, INDEX>;
+	friend class rstd::MVector<DIM + 1, T, INDEX>;
 };
 
 /*===========================================================================*/
@@ -196,7 +192,7 @@ class MVector<1, T, INDEX> :
 	typedef typename super::size_type size_type;
 
 public:
-	virtual ~MVector() throw() {}
+	virtual ~MVector() {}
 
 	MVector() {}
 	MVector(size_t n, const T & value) : super(n, value) {}
@@ -223,12 +219,12 @@ public:
 
 private:
 	template <typename IT>
-		T & dim_index(const IT * indx) { return (*this)[*indx]; }
+		const T & dim_index(const IT * i) const { return (*this)[*i]; }
 
 	template <typename IT>
-		const T & dim_index(const IT * indx) const { return (*this)[*indx]; }
+		T & dim_index(const IT * i) { return (*this)[*i]; }
 
-	friend MVector<2, T, INDEX>;
+	friend class rstd::MVector<2, T, INDEX>;
 };
 
 /*===========================================================================*/
@@ -236,4 +232,6 @@ void RVector_test();
 
 /*###########################################################################*/
 #include "RVector.cct"
+}
+
 #endif

@@ -1,15 +1,20 @@
-// Copyright 2000 by Robert Dick.
+// Copyright 2008 by Robert Dick.
 // All rights reserved.
 
 #include "RString.h"
 #include "RVector.h"
 #include "RStd.h"
+#include "RMath.h"
 
 #include <algorithm>
 #include <functional>
 #include <string>
 #include <cstring>
 #include <iostream>
+#include <cmath>
+
+namespace rstd {
+using namespace std;
 
 /*###########################################################################*/
 const RVector<string>
@@ -68,10 +73,11 @@ insen_equal_to<string>::operator()(const string & a, const string & b) const {
 namespace {
 	template <typename T>
 	T convert(const string & s) {
-		istrstream iss(s.c_str());
+		istringstream iss(s.c_str());
 		double dbl;
 		iss >> dbl;
-// FIXME: Insert check when MAX and MIN templates are supported.
+		Rassert(dbl <= rnlimits<T>::max());
+		Rassert(dbl >= rnlimits<T>::smallest());
 		Rassert(! iss.bad());
 		return static_cast<T>(dbl);
 	}
@@ -85,6 +91,7 @@ namespace {
 			return false;
 		}
 
+		Rdump(s);
 		Rabort();
 		return false;
 	}
@@ -156,4 +163,6 @@ void RString_test() {
 	cout << "Should be ****: **" << ft3 << "**\n";
 
 	RVector<string> sv = tokenize(string(""));
+}
+
 }
