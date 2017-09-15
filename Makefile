@@ -7,7 +7,7 @@ TO := -o
 
 #C_OPTS := -O0 -ffor-scope -ftemplate-depth-50 -std=c++98
 C_OPTS := -O0 -ffor-scope -ftemplate-depth-50 -std=c++98 \
-  -DROB_DEBUG -ggdb -O0 -pedantic -I. -Wno-deprecated
+  -DROB_DEBUG -ggdb -O0 -pedantic -I. -Wno-deprecated -fPIC
 
 L_OPTS := -lstdc++ -lm
 
@@ -94,3 +94,7 @@ tree.o: tree.cc tree.h RVector.h RStd.h RStd.cct Interface.h \
  RString.cct ArgPack.h database.h function.h node.h Graph.h Graph.cct \
  ktime.h fgraph.h
 
+clean:
+	-rm *.o tge
+
+.PHONY: clean
