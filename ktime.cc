@@ -59,7 +59,7 @@ bool TimeUnit::operator< (TimeUnit tu)
 }
 
 // overload output operator
-ostream & operator<<(ostream & os, const TimeUnit & tu_a)
+std::ostream & operator<<(std::ostream & os, const TimeUnit & tu_a)
 {
 	os << tu_a.sec() + tu_a.usec()/1000000.0;
 	return os;

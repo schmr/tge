@@ -41,7 +41,7 @@ public:
 };
 
 // overloaded output operator
-ostream & operator<<(ostream & os, const TimeUnit & tu_a);
+std::ostream & operator<<(std::ostream & os, const TimeUnit & tu_a);
 
 #endif
 

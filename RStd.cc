@@ -1,10 +1,13 @@
-// Copyright 2000 by Robert Dick.
+// Copyright 2008 by Robert Dick.
 // All rights reserved.
 
 #include "RStd.h"
 
 #include <iostream>
 #include <cstdlib>
+
+namespace rstd {
+using namespace std;
 
 /*###########################################################################*/
 ostream cerrhex(cerr.rdbuf());
@@ -39,4 +42,5 @@ void rexit(const char * message) {
 
 /*###########################################################################*/
 void RStd_test() {
+}
 }

@@ -1,4 +1,4 @@
-// Copyright 2000 by Robert Dick.
+// Copyright 2008 by Robert Dick.
 // All rights reserved.
 
 #include "Graph.h"
@@ -7,6 +7,13 @@
 #include <algorithm>
 #include <typeinfo>
 #include <iostream>
+#include "Epsilon.h"
+
+namespace rstd {
+using namespace std;
+
+const RawGraph::vertex_index RawGraph::INVALID_VINDEX = -1;
+const RawGraph::edge_index RawGraph::INVALID_EINDEX = -1;
 
 /*###########################################################################*/
 RawGraph &
@@ -16,6 +23,11 @@ RawGraph::operator=(const self & a) {
 	return *this;
 }
 
+/*===========================================================================*/
+comp_type
+RawGraph::vertex_index::comp(const vertex_index & a) const {
+	return rstd::comp(index_, a.index_);
+}
 
 /*===========================================================================*/
 RawGraph::vertex_index RawGraph::add_vertex() {
@@ -24,6 +36,12 @@ RawGraph::vertex_index RawGraph::add_vertex() {
 
 	RDEBUG(self_check());
 	return vertex_.size() - 1;
+}
+
+/*===========================================================================*/
+comp_type
+RawGraph::edge_index::comp(const edge_index & a) const {
+	return rstd::comp(index_, a.index_);
 }
 
 /*===========================================================================*/
@@ -37,6 +55,18 @@ add_edge(const vertex_index from, const vertex_index to) {
 
 	RDEBUG(self_check());
 	return e;
+}
+
+/*===========================================================================*/
+double
+RawGraph::vertex_weight(vertex_index /* v */) const {
+	return 0.0;
+}
+
+/*===========================================================================*/
+double
+RawGraph::edge_weight(edge_index /* e */) const {
+	return 1.0;
 }
 
 /*===========================================================================*/
@@ -73,12 +103,16 @@ void RawGraph::erase_vertex(const vertex_index i) {
 
 /*===========================================================================*/
 void RawGraph::erase_edge(const edge_index i) {
+	RASSERT(i < size_edge());
 // Fix connected vertices.
 	vertex_type & parent = *vertex(edge(i)->from());
 	vertex_type & child = *vertex(edge(i)->to());
 
-	edge_index * parent_edge = find(parent.out_.begin(), parent.out_.end(), i);
-	edge_index * child_edge = find(child.in_.begin(), child.in_.end(), i);
+	RVector<edge_index>::iterator parent_edge =
+		find(parent.out_.begin(), parent.out_.end(), i);
+
+	RVector<edge_index>::iterator child_edge =
+		find(child.in_.begin(), child.in_.end(), i);
 
 	parent.out_.erase(parent_edge);
 	child.in_.erase(child_edge);
@@ -133,7 +167,7 @@ void RawGraph::rswap(RawGraph & rg) {
 /*===========================================================================*/
 void RawGraph::print_to(ostream & os) const {
 	MAP(x, vertex_.size()) {
-		os << "vertex " << x;
+		os << "vertex " << x << " ";
 		vertex_[x].print_to(os);
 		os << "\n";
 	}
@@ -205,6 +239,7 @@ const RVector<RawGraph::vertex_index>
 RawGraph::bfs(const vertex_index start, bool reverse_i) const {
 	RVector<vertex_index> vec;
 	RVector<big_bool> visited(vertex_.size(), false);
+	visited[start] = true;
 	bfs_recurse(vec, visited, start, reverse_i);
 	return vec;
 }
@@ -216,10 +251,65 @@ RawGraph::bfs(RVector<vertex_index> start, bool reverse_i) const {
 	RVector<big_bool> visited(vertex_.size(), false);
 
 	MAP(x, start.size()) {
+		visited[start[x]] = true;
 		bfs_recurse(vec, visited, start[x], reverse_i);
 	}
 
 	return vec;
+}
+
+/*===========================================================================*/
+const RVector<std::pair<RawGraph::vertex_index, double> >
+RawGraph::shortest_path(vertex_index start) const {
+Rabort();
+	RVector<vertex_index> parent;
+	RVector<double> distance;
+
+// Initialize single source
+
+	MAP(x, vertex_.size()) {
+		parent.push_back(RawGraph::INVALID_VINDEX);
+
+		if (x == start) {
+			distance.push_back(0.0);
+		} else {
+			distance.push_back(numeric_limits<double>::max());
+		}
+	}
+
+// relax
+// recursively do this until no more changes
+	bool distance_changed = true;
+	while (distance_changed == true) {
+		distance_changed = false;
+		MAP(x, edge_.size()) {
+			if (distance[edge_[x].to_] > distance[edge_[x].from_] +
+				edge_weight(x))
+			{
+				distance[edge_[x].to_] = distance[edge_[x].from_] + edge_weight(x);
+				parent[edge_[x].to_] = vertex_index(edge_[x].from_);
+				distance_changed = true;
+			}
+		}
+
+	}
+
+// check for negative weight
+	eps_equal_to<double, 10> eq;
+	MAP(x, edge_.size()) {
+//#warning THIS CODE IS WRONG
+		RASSERT(eq(distance[edge_[x].to_], distance[edge_[x].from_] +
+			edge_weight(x)));
+	}
+
+	RVector<std::pair<vertex_index, double> > shortestpath_result;
+
+	MAP (x, parent.size()) {
+		pair<vertex_index, double> result(parent[x], distance[x]);
+		shortestpath_result.push_back(result);
+	}
+
+	return shortestpath_result;
 }
 
 /*===========================================================================*/
@@ -276,6 +366,7 @@ const RVector<RawGraph::vertex_index> RawGraph::
 RawGraph::outward_crawl(const vertex_index start) const {
 	RVector<vertex_index> vec;
 	RVector<big_bool> visited(vertex_.size(), false);
+	visited[start] = true;
 	outward_crawl_recurse(vec, visited, start);
 	return vec;
 }
@@ -283,9 +374,6 @@ RawGraph::outward_crawl(const vertex_index start) const {
 /*===========================================================================*/
 const RVector<int>
 RawGraph::max_depth(const vertex_index start, bool reverse_i) const {
-// Warning: This method has not been well-tested.
-Rabort();
-
 	RVector<int> vec(vertex_.size(), -1);
 	RVector<big_bool> visited(vertex_.size(), false);
 
@@ -307,9 +395,6 @@ Rabort();
 const RVector<int>
 RawGraph::max_depth(const RVector<vertex_index> & start,
 bool reverse_i) const {
-// Warning: This method has not been well-tested.
-Rabort();
-
 	RVector<int> vec(vertex_.size(), -1);
 	RVector<big_bool> visited(vertex_.size(), false);
 
@@ -333,8 +418,9 @@ Rabort();
 
 /*===========================================================================*/
 void RawGraph::self_check() const {
-	MAP(x, vertex_.size())
-		Rassert(vertex_offset(&vertex_[x]) < size_vertex());
+	MAP(x, vertex_.size()) {
+		Rassert(vertex_offset(vertex_.begin() + x) < size_vertex());
+	}
 
 	MAP(x, edge_.size()) {
 		Rassert(edge_[x].to_ < size_vertex());
@@ -531,8 +617,8 @@ void RawGraph::edge_type::print_to(ostream & os) const {
 /*===========================================================================*/
 comp_type
 RawGraph::edge_type::comp(const self & et) const {
-	const comp_type fr = ::comp(from_, et.from_);
-	return fr ? fr : ::comp(to_, et.to_);
+	const comp_type fr = rstd::comp(from_, et.from_);
+	return fr ? fr : rstd::comp(to_, et.to_);
 }
 
 /*===========================================================================*/
@@ -553,6 +639,18 @@ comp_type
 RawGraph::vertex_type::comp(const self & vt) const {
 	const comp_type ot = comp_cont(out_, vt.out_);
 	return ot ? ot : comp_cont(in_, vt.in_);
+}
+
+/*###########################################################################*/
+double
+WGraph::vertex_weight(vertex_index v) const {
+	return (*this)[v];
+}
+
+/*===========================================================================*/
+double
+WGraph::edge_weight(edge_index e) const {
+	return (*this)(e);
 }
 
 /*###########################################################################*/
@@ -579,11 +677,15 @@ void Graph_test() {
 
 	for (long x = dl.size() - 1; x >= 0; --x) {
 		if (g1.vertex(dl[x])->size_out()) {
-			dl.erase(&dl[x]);
+			dl.erase(dl.begin() + x);
 		}
 	}
+
+	cout << g1 << "\n";
 
 	RVector<RawGraph::vertex_index> rtsrt = g1.top_sort(dl, true);
 	cout << "Graph: " << rtsrt << "\n";
 	RASSERT(rtsrt.size() == g1.size_vertex());
+}
+
 }

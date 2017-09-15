@@ -125,13 +125,13 @@ int check_type ();
 
 void make_white_space()
 {
-	string str = yytext;
+	std::string str = yytext;
 	yyadd_whitespace(str);
 }
 
 void count()
 {
-	yylval = new string(yytext);
+	yylval = new std::string(yytext);
 //	strcpy (yylval, yytext);
 
 	int i;
@@ -157,7 +157,7 @@ int yywrap()
 
 int check_type()
 {
-	string yy_temp_string = yytext;
+	std::string yy_temp_string = yytext;
 /*
 * pseudo code --- this is what it should check
 *

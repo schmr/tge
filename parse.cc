@@ -36,10 +36,10 @@ extern FILE *yyin;
 
 int column = 0;
 int yytypedef_flag = 0;
-string yywhitespace ("");
+std::string yywhitespace ("");
 
 // starts yacc parser
-void do_parse(string s)
+void do_parse(std::string s)
 {
 	yyin = fopen (s.c_str(), "r");
 	Rassert(yyin);
@@ -47,17 +47,17 @@ void do_parse(string s)
 }
 
 // adds str to the list of known data type names
-void yytypedef_table_add(string str)
+void yytypedef_table_add(std::string str)
 {
-	string tmpstr = str;
-//	cerr << "type: " << tmpstr << endl;
+	std::string tmpstr = str;
+//	cerr << "type: " << tmpstr << std::endl;
 	DB::write_db().type_map_insert(tmpstr, 0);
 }
 
 // determines if str is a data type name or just an ordinary word
-char yytypedef_table_lookup(string str)
+char yytypedef_table_lookup(std::string str)
 {
-	string s = str;
+	std::string s = str;
 	if ((DB::write_db().type_map_lookup(s)) == -1) {
 		return 0;
 	} else {
@@ -66,10 +66,10 @@ char yytypedef_table_lookup(string str)
 }
 
 // adds str to AST and tells the tree that it has n children
-void yypopulate_tree (string str, long n)
+void yypopulate_tree (std::string str, long n)
 {
-	string tmpstr = str;
-//cout << n << ":   " << tmpstr << endl;
+	std::string tmpstr = str;
+//std::cout << n << ":   " << tmpstr << std::endl;
 
 	if (n == 0) {
 		DB::write_db().add_tree_node(tmpstr, n, yywhitespace);
@@ -80,9 +80,9 @@ void yypopulate_tree (string str, long n)
 }
 
 // used to make reprinting the source code look better
-void yyadd_whitespace (string tmpstr)
+void yyadd_whitespace (std::string tmpstr)
 {
-	string tmp_str = tmpstr;
+	std::string tmp_str = tmpstr;
 	yywhitespace += tmp_str;
 }
 

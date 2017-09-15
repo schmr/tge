@@ -1,4 +1,4 @@
-// Copyright 2000 by Robert Dick.
+// Copyright 2008 by Robert Dick.
 // All rights reserved.
 
 #ifndef INTERFACE_H_
@@ -42,8 +42,12 @@ errors.  For now, put Prints<> and Comps<> first. */
 /*###########################################################################*/
 /* Detects objects with an 'ostream & << const T &' operator for their
 immediate type and those which are explicitly printable (inherit from Prints<>
-at some stage of the class DAG.  Allows printing of such objects. */
+at some stage of the class DAG.  Allows printing of such objects.
+ If you don't request that it provide a function, make your own print_to,
+which may be non-virtual.  Otherwise, make a print_to_default function, which
+will be turned into a virtual print_to function only if T is printable. */
 
+namespace rstd {
 class PrintsRoot { protected: ~PrintsRoot() {} };
 
 template <typename T, bool PRINTS, bool PROVIDE> class PrintsBase {};
@@ -55,35 +59,44 @@ class PrintsBase<T, true, false> : public virtual PrintsRoot {
 
 template <typename T>
 class PrintsBase<T, true, true> : public virtual PrintsRoot {
-	public: virtual void print_to(ostream & os) const;
+	public: virtual void print_to(std::ostream & os) const;
 	protected: ~PrintsBase() {}
 };
 
 template <typename T, bool PROVIDE>
-	ostream & operator<<(ostream & os, const PrintsBase<T, true, PROVIDE> & p);
+	std::ostream & operator<<(std::ostream & os,
+	const PrintsBase<T, true, PROVIDE> & p);
 
 /* Specialize on PROVIDE == false to make re-inheriting interface useful
 (once).  More than once will require operator<< to be defined again. */
 
 template <typename T>
-	ostream & operator<<(ostream & os, const PrintsBase<T, true, false> & p);
+	std::ostream & operator<<(std::ostream & os,
+	const PrintsBase<T, true, false> & p);
 
 namespace PRINTABLE_NS_ {
-	struct NO { char c[10]; };
-	typedef ostream & YES;
+	struct NO { char c[65536]; };
+	typedef std::ostream & YES;
 
-	template <typename T2>
-		NO operator<<(ostream &, const T2 &);
+// Block implicit conversions (motivated by comp.lang.c++.moderated
+// discussion)
+   struct block {
+   	template <typename T>
+			block (T const &);
+	};
+
+// Default method
+	NO operator<<(const block &, const block &);
 
 	template <typename T>
 	struct printable {
 		enum { result = (same_or_derived<T, PrintsRoot>::result ||
-			sizeof(YES) ==
-			sizeof(make_instance<ostream &>() << make_instance<T>())) };
+			sizeof(NO) !=
+			sizeof(make_instance<std::ostream &>() << make_instance<T>())) };
 	};
-};
+}
 
-/* Uses print_to function exists if DEP can be printed.  Provides print_to
+/* Uses print_to function if DEP can be printed.  Provides print_to
 function based on print_to_default if PROVIDE is true. */
 
 template <typename T, typename DEP = int, bool PROVIDE = false>
@@ -92,14 +105,35 @@ public PrintsBase<T, PRINTABLE_NS_::printable<DEP>::result, PROVIDE> {
 	protected: ~Prints() {}
 };
 
+template <typename T, typename U,
+bool PRINTABLE = PRINTABLE_NS_::printable<T>::result>
+class print_if_possible_internal {};
+
+// Using constructors to make it look like a function.
+template <typename T, typename U>
+struct print_if_possible_internal<T, U, false> {
+	static void print(std::ostream & os, const T &, const U & deflt)
+		{ os << deflt; }
+};
+
+template <typename T, typename U>
+struct print_if_possible_internal<T, U, true> {
+	static void print(std::ostream & os, const T & t, const U &)
+		{ os << t; }
+};
+
+template <typename T, typename U>
+	void print_if_possible(std::ostream & os, const T & t, const U & deflt)
+		{ print_if_possible_internal<T, U>::print(os, t, deflt); }
+
 /*===========================================================================*/
 // Prints simple containers.
 template <typename InIter>
-	void print_cont(InIter first, InIter last, ostream & os = cout,
+	void print_cont(InIter first, InIter last, std::ostream & os = std::cout,
 	const char * sep = " ");
 
 template <typename Container>
-	void print_cont(const Container & c, ostream & os, const char * sep = " ");
+	void print_cont(const Container & c, std::ostream & os, const char * sep = " ");
 
 /*===========================================================================*/
 /* LESS will always be less than 0.  EQ will always be 0.  GREATER will always
@@ -107,7 +141,7 @@ be greater than 0. */
 
 enum comp_type { LESS = -1, EQ = 0, GREATER = 1 };
 
-ostream & operator<<(ostream & os, comp_type c);
+std::ostream & operator<<(std::ostream & os, comp_type c);
 
 template <typename T> struct comp_func {
 	typedef comp_type (*func)(const T & a, const T & b);
@@ -129,22 +163,26 @@ class CompsBase<T, true, true> : public virtual CompsRoot {
 };
 
 namespace COMPARABLE_NS_ {
-	struct NO { char c[10]; };
+	struct NO { char c[65536]; };
 	typedef bool YES;
 
-	template <typename T2>
-		NO operator<(const T2 &, const T2 &);
+// Block implicit conversions (motivated by comp.lang.c++.moderated
+// discussion)
+   struct block {
+   	template <typename T>
+			block (T const &);
+	};
 
-	template <typename T2>
-		NO operator==(const T2 &, const T2 &);
+	NO operator<(const block &, const block &);
+	NO operator==(const block &, const block &);
 
 	template <typename T>
 	struct comparable {
 		enum { result = (same_or_derived<T, CompsRoot>::result ||
-			(sizeof(YES) == sizeof(make_instance<T>() < make_instance<T>())) &&
-			(sizeof(YES) == sizeof(make_instance<T>() == make_instance<T>()))) };
+			((sizeof(NO) != sizeof(make_instance<T>() < make_instance<T>())) &&
+			(sizeof(NO) != sizeof(make_instance<T>() == make_instance<T>())))) };
 	};
-};
+}
 
 template <typename T, typename DEP = int, bool PROVIDE = false>
 class Comps :
@@ -157,10 +195,10 @@ template <typename T>
 
 // Compare simple containers.
 template <typename I,
-typename comp_func<iterator_traits<I>::value_type>::func COMP>
+typename comp_func<typename std::iterator_traits<I>::value_type>::func COMP>
 	comp_type comp_cont(I first1, I last1, I first2, I last2);
 
-// Defaults to comp<iterator_traits<I>::value_type>
+// Defaults to comp<typename std::iterator_traits<I>::value_type>
 template <typename I>
 	comp_type comp_cont(I first1, I last1, I first2, I last2);
 
@@ -187,10 +225,40 @@ template <typename T, bool PROVIDE>
 	bool operator==(const CompsBase<T, true, PROVIDE> & a,
 	const CompsBase<T, true, PROVIDE> & b);
 
-/* Specialize on PROVIDE == false to make re-inheriting interface useful
-(once).  More than once will require operator<< to be defined again. */
 template <typename T>
 	bool operator==(const CompsBase<T, true, false> & a,
+	const CompsBase<T, true, false> & b);
+
+template <typename T, bool PROVIDE>
+	bool operator!=(const CompsBase<T, true, PROVIDE> & a,
+	const CompsBase<T, true, PROVIDE> & b);
+
+template <typename T, bool PROVIDE>
+	bool operator!=(const CompsBase<T, true, false> & a,
+	const CompsBase<T, true, false> & b);
+
+template <typename T, bool PROVIDE>
+	bool operator>(const CompsBase<T, true, PROVIDE> & a,
+	const CompsBase<T, true, PROVIDE> & b);
+
+template <typename T, bool PROVIDE>
+	bool operator>(const CompsBase<T, true, false> & a,
+	const CompsBase<T, true, false> & b);
+
+template <typename T, bool PROVIDE>
+	bool operator<=(const CompsBase<T, true, PROVIDE> & a,
+	const CompsBase<T, true, PROVIDE> & b);
+
+template <typename T, bool PROVIDE>
+	bool operator<=(const CompsBase<T, true, false> & a,
+	const CompsBase<T, true, false> & b);
+
+template <typename T, bool PROVIDE>
+	bool operator>=(const CompsBase<T, true, PROVIDE> & a,
+	const CompsBase<T, true, PROVIDE> & b);
+
+template <typename T, bool PROVIDE>
+	bool operator>=(const CompsBase<T, true, false> & a,
 	const CompsBase<T, true, false> & b);
 
 /*===========================================================================*/
@@ -244,6 +312,9 @@ template <typename T>
 template <typename ITER>
 	void map_self_check_deep(ITER begin, ITER end);
 
+void Interface_test();
+
 /*###########################################################################*/
 #include "Interface.cct"
+}
 #endif

@@ -21,14 +21,14 @@ they are all held in one location.
 #include "RString.h"
 
 /*###########################################################################*/
-auto_ptr<ArgPack> ArgPack::def_ap_;
+std::auto_ptr<ArgPack> ArgPack::def_ap_;
 /*===========================================================================*/
-void ArgPack::init(int argc, char * const argv [], ostream & output) {
+void ArgPack::init(int argc, char * const argv [], std::ostream & output) {
 	def_ap_.reset(new ArgPack(argc, argv, output));
 }
 
 /*===========================================================================*/
-ArgPack::ArgPack(int argc, char *const argv [], ostream & output) :
+ArgPack::ArgPack(int argc, char *const argv [], std::ostream & output) :
 	file_name_(),
 	is_(),
 	is_line_(1),
@@ -49,7 +49,7 @@ ArgPack::ArgPack(int argc, char *const argv [], ostream & output) :
 	opterr = 0;
 
 	// List of possible flag identifiers
-	string usage = string("usage: ") + argv[0] + 
+	std::string usage = std::string("usage: ") + argv[0] + 
 			" [-AeEghHILlp:PsStv] [file1]\n";
 
 	while (1) {
@@ -61,7 +61,7 @@ ArgPack::ArgPack(int argc, char *const argv [], ostream & output) :
 		if (ch == -1)
 			break;
 
-		RVector<string> vec;
+		rstd::RVector<std::string> vec;
 
 		// Parses flags
 		switch (ch) {
@@ -96,7 +96,7 @@ ArgPack::ArgPack(int argc, char *const argv [], ostream & output) :
 				loosest_dependence_ = true;
 				break;
 			case 'p':
-				pointer_size_ = Conv(optarg);
+				pointer_size_ = rstd::Conv(optarg);
 				break;
 			case 'P':
 				profile_ = false;
@@ -147,7 +147,7 @@ ArgPack::ArgPack(int argc, char *const argv [], ostream & output) :
 }
 
 /*===========================================================================*/
-void ArgPack::help(ostream &os) const {
+void ArgPack::help(std::ostream &os) const {
 	os <<
 	  "A:  Don't display actions inside of nodes for vcg file.\n" <<
 	  "e:  Echo tokens while they are read.\n" <<
@@ -167,24 +167,24 @@ void ArgPack::help(ostream &os) const {
 }
 
 /*===========================================================================*/
-void ArgPack::parse_error(ostream & os, const char message[]) const {
+void ArgPack::parse_error(std::ostream & os, const char message[]) const {
 	os << message << " on line " << is_line_ << "\n";
 	throw init_error("");
 }
 
 /*===========================================================================*/
-const RVector<string>
+const rstd::RVector<std::string>
 ArgPack::get_line() {
-	string str;
+	std::string str;
 
-	string::size_type text_pos;
+	std::string::size_type text_pos;
 	do {
 		getline(is_, str);
-		if (! is_) return RVector<string>();
+		if (! is_) return rstd::RVector<std::string>();
 		is_line_++;
 
 		text_pos = str.find_first_not_of(" \t");
 	} while (text_pos >= str.size() || str[text_pos] == '#');
 
-	return tokenize(str);
+	return rstd::tokenize(str);
 }

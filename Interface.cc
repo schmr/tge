@@ -1,7 +1,11 @@
-// Copyright 2000 by Robert Dick.
+// Copyright 2008 by Robert Dick.
 // All rights reserved.
 
 #include "Interface.h"
+#include <set>
+
+namespace rstd {
+using namespace std;
 
 /*===========================================================================*/
 ostream &
@@ -23,3 +27,11 @@ operator<<(ostream & os, comp_type c) {
 	return os;
 }
 
+void Interface_test() {
+	const set<int> a;
+	const set<int> b;
+	int y = a < b;
+	y++;
+}
+
+}

@@ -1,4 +1,4 @@
-// Copyright 2000 by Robert Dick.
+// Copyright 2008 by Robert Dick.
 // All rights reserved.
 
 #ifndef R_PAIR_H_
@@ -14,6 +14,7 @@ these simple types is intentional. */
 #include <utility>
 #include <iosfwd>
 
+namespace rstd {
 /*===========================================================================*/
 /* Don't even think of providing 'ostream << pair'.  It separates the
 definition of pair's interface into two files and may result in serious
@@ -35,6 +36,16 @@ template <typename Pair>
 	struct less_2nd : public rbinary_function<Pair, Pair, bool>
 	{ bool operator()(const Pair & a, const Pair & b) const; };
 
+template <typename Pair>
+	struct select1st :
+	public runary_function<Pair, typename Pair::first_type>
+	{ const typename Pair::first_type & operator()(const Pair & a) const; };
+
+template <typename Pair>
+	struct select2nd :
+	public runary_function<Pair, typename Pair::second_type>
+	{ const typename Pair::second_type & operator()(const Pair & a) const; };
+
 /*===========================================================================*/
 template <typename T1, typename T2, typename T3>
 struct Triple : public Prints<Triple<T1, T2, T3> > {
@@ -42,14 +53,14 @@ struct Triple : public Prints<Triple<T1, T2, T3> > {
 	typedef T2 second_type;
 	typedef T3 third_type;
 
-	~Triple() throw() {}
+	~Triple() {}
 	Triple() : first(T1()), second(T2()), third(T3()) {}
 	Triple(const T1 & a, const T2 & b, const T3 & c);
 
 	template <typename TripleLike>
 		Triple(const TripleLike & tl);
 
-	void print_to(ostream & os) const;
+	void print_to(std::ostream & os) const;
 
 		T1 first;
 		T2 second;
@@ -89,7 +100,7 @@ struct Quad : public Prints<Quad<T1, T2, T3, T4> > {
 	typedef T3 third_type;
 	typedef T4 fourth_type;
 
-	~Quad() throw() {}
+	~Quad() {}
 
 	Quad() : first(T1()), second(T2()), third(T3()), fourth(T4()) {}
 	Quad(const T1 & a, const T2 & b, const T3 & c, const T4 & d);
@@ -97,7 +108,7 @@ struct Quad : public Prints<Quad<T1, T2, T3, T4> > {
 	template <typename QuadLike>
 		Quad(const QuadLike & ql);
 
-	void print_to(ostream & os) const;
+	void print_to(std::ostream & os) const;
 
 		T1 first;
 		T2 second;
@@ -131,4 +142,6 @@ template <typename Quad>
 
 /*###########################################################################*/
 #include "RPair.cct"
+}
+
 #endif

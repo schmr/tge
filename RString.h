@@ -1,4 +1,4 @@
-// Copyright 2000 by Robert Dick.
+// Copyright 2008 by Robert Dick.
 // All rights reserved.
 
 #ifndef R_STRING_H_
@@ -8,18 +8,21 @@
 #include "RFunctional.h"
 
 #include <string>
-#include <strstream>
+#include <sstream>
 
+namespace rstd {
 template <typename T> class RVector;
 
 /*===========================================================================*/
 // Support routines for strings.
 
-const RVector<string>
-	tokenize(const string &s, const char * delim = " \t\n");
+const RVector<std::string>
+	tokenize(const std::string &s, const char * delim = " \t\n");
 
-const string first_token(const string & s, const char * delim = " \t\n");
-void pop_token(string & s, const char * delim = " \t\n");
+const std::string first_token(const std::string & s,
+	const char * delim = " \t\n");
+
+void pop_token(std::string & s, const char * delim = " \t\n");
 
 template <typename T>
 	struct insen_less : rbinary_function<const T &, const T &, bool>
@@ -38,19 +41,19 @@ template <>
 	{ bool operator()(const char & a, const char & b) const; };
 
 template <>
-	struct insen_less<string>
-	{ bool operator()(const string & a, const string & b) const; };
+	struct insen_less<std::string>
+	{ bool operator()(const std::string & a, const std::string & b) const; };
 
 template <>
-	struct insen_equal_to<string>
-	{ bool operator()(const string & a, const string & b) const; };
+	struct insen_equal_to<std::string>
+	{ bool operator()(const std::string & a, const std::string & b) const; };
 
 /*===========================================================================*/
 // Automatically converts strings to many other types.
 
 class Conv {
 public:
-	Conv(const string & str);
+	Conv(const std::string & str);
 
 	operator bool();
 
@@ -70,14 +73,15 @@ public:
 	operator double();
 
 private:
-		string str_;
+		std::string str_;
 };
 
-template <typename T> string to_string(const T & data);
+template <typename T> std::string to_string(const T & data);
 
 /*===========================================================================*/
 void RString_test();
 
 /*###########################################################################*/
 #include "RString.cct"
+}
 #endif

@@ -18,50 +18,55 @@ they are all held in one location.
 #include <memory>
 #include <fstream>
 #include <iosfwd>
+#include <exception>
+#include <iostream>
+#include "RVector.h"
 
-template <typename> class RVector;
+//template <typename> class RVector;
 
 /*###########################################################################*/
 // Handles arguments to the program.
 class ArgPack {
 public:
-	class init_error : public exception {
+	class init_error : public std::exception {
 	public:
-		init_error(const string & err) : what_(err) {}
-		virtual const char * what() const { return what_.c_str(); }
+		init_error(const std::string & err) throw() : what_(err) {}
+		virtual ~init_error() throw() {}
+		virtual const char * what() const throw() { return what_.c_str(); }
 
 	private:
-			string what_;
+			std::string what_;
 	};
 
-	class parse_error : public exception {
+	class parse_error : public std::exception {
 	public:
-		parse_error(const string & file, long line, const string & err = "");
-		virtual const char * what() const { return what_.c_str(); }
+		parse_error(const std::string & file, long line, const std::string & err = "") ;
+		virtual ~parse_error() throw() {}
+		virtual const char * what() const throw() { return what_.c_str(); }
 
 	private:
-			string what_;
+			std::string what_;
 	};
 
 // Gets the default ArgPack.
 	static const ArgPack & ap() { return *def_ap_; }
 	static ArgPack & write_ap() { return *def_ap_; }
 
-	static void init(int argc, char * const argv [], ostream & output);
+	static void init(int argc, char * const argv [], std::ostream & output);
 
 // Throws init_error if it can't be constructed.
-	ArgPack(int argc, char * const argv [], ostream & output);
-	void help(ostream &os) const;
+	ArgPack(int argc, char * const argv [], std::ostream & output);
+	void help(std::ostream &os) const;
 
-	void parse_error(ostream & os = cout,
+	void parse_error(std::ostream & os = std::cout,
 		const char * message = "Parse error") const;
 
-	const RVector<string> get_line();
+	const rstd::RVector<std::string> get_line();
 	int get_rand_seed () { return rand_seed; }
 
 	// query
-	string get_fname () { return file_name_; }
-	const string get_fname () const { return file_name_; }
+	std::string get_fname () { return file_name_; }
+	const std::string get_fname () const { return file_name_; }
 	bool echo_on () { return echo_on_; }
 	const bool echo_on () const { return echo_on_; }
 	bool display_state_end () { return display_state_end_; }
@@ -89,10 +94,10 @@ public:
 
 private:
 		// The ArgPack
-		static auto_ptr<ArgPack> def_ap_;
+		static std::auto_ptr<ArgPack> def_ap_;
 
-		string file_name_;  // original source file name
-		ifstream is_;   // input stream
+		std::string file_name_;  // original source file name
+		std::ifstream is_;   // input stream
 		long is_line_;
 		int rand_seed;
 		bool echo_on_;  // prints original C while parsing

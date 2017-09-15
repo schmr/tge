@@ -1,4 +1,4 @@
-// Copyright 2000 by Robert Dick.
+// Copyright 2008 by Robert Dick.
 // All rights reserved.
 
 /*###########################################################################*/
@@ -29,6 +29,19 @@ less_2nd<Pair>::operator()(const Pair & a, const Pair & b) const {
 	return a.second < b.second;
 }
 
+/*===========================================================================*/
+template <typename Pair>
+const typename Pair::first_type &
+select1st<Pair>::operator()(const Pair & a) const {
+	return a.first;
+}
+
+template <typename Pair>
+const typename Pair::second_type &
+select2nd<Pair>::operator()(const Pair & a) const {
+	return a.second;
+}
+
 /*###########################################################################*/
 template <typename T1, typename T2, typename T3>
 Triple<T1, T2, T3>::Triple(const T1 & a, const T2 & b, const T3 & c) :
@@ -47,7 +60,7 @@ Triple<T1, T2, T3>::Triple(const TripleLike & tl) :
 
 /*===========================================================================*/
 template <typename T1, typename T2, typename T3>
-void Triple<T1, T2, T3>::print_to(ostream & os) const {
+void Triple<T1, T2, T3>::print_to(std::ostream & os) const {
 	os << "[" << first << " " << second << " " << third << "]";
 }
 
@@ -118,7 +131,7 @@ Quad<T1, T2, T3, T4>::Quad(const QuadLike & ql) :
 
 /*===========================================================================*/
 template <typename T1, typename T2, typename T3, typename T4>
-void Quad<T1, T2, T3, T4>::print_to(ostream & os) const {
+void Quad<T1, T2, T3, T4>::print_to(std::ostream & os) const {
 	return os << "[" << first << " " << second << " " << third <<
 	  " " << fourth << "]";
 }

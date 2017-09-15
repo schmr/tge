@@ -27,36 +27,36 @@ types, variables and functions.
 // DB contains everything
 class DB {
 	// contains all functions and variables in original source
-	RVector<Function> function_;
-	RVector<Var> variable_;
+	rstd::RVector<Function> function_;
+	rstd::RVector<Var> variable_;
 
 	// pointer to the only DB (there can be only one)
 	static DB * def_db_;
 
 	// the AST
-	RVector<TreeNode> tree_node_;
-	RVector<long> tree_start_;
+	rstd::RVector<TreeNode> tree_node_;
+	rstd::RVector<long> tree_start_;
 
 	// Maps for quick lookups of vectors in DB
-	map<string, long> type_map_;
-	map<string, long> func_map_;
-	map<string, long> var_map_;
+	std::map<std::string, long> type_map_;
+	std::map<std::string, long> func_map_;
+	std::map<std::string, long> var_map_;
 
 	// for parsing tree
 	bool fn_redeclaration_;
 
 	// Task (dependence) graphs for each function
 	TGraph tg_;
-	RVector<TGraph> fg_;
+	rstd::RVector<TGraph> fg_;
 
 	// function call graph
 	FGraph call_graph_;
 
 	// records profiling information
-	RVector<RVector<string> > annote_data_;
+	rstd::RVector<rstd::RVector<std::string> > annote_data_;
 	
-	RVector<string> func_def_name_list_;
-	set<string> undefined_structs_;
+	rstd::RVector<std::string> func_def_name_list_;
+	std::set<std::string> undefined_structs_;
 public:
 	// Constructor
    DB ();
@@ -89,10 +89,10 @@ public:
 	void do_dependence();
 	void build_call_graph();
 	TGraph fn_dep (long id);
-	RVector<long> add_alias_data (long fn, pair<long,long> a_node);
-	RVector<long> do_func_call (long id, long fc_num);
-	long get_assign_lhs_var (long fn, pair<long,long> a_node);
-	void update_lhs_var_aliases (long id, RVector<long> lhs_var);
+	rstd::RVector<long> add_alias_data (long fn, std::pair<long,long> a_node);
+	rstd::RVector<long> do_func_call (long id, long fc_num);
+	long get_assign_lhs_var (long fn, std::pair<long,long> a_node);
+	void update_lhs_var_aliases (long id, rstd::RVector<long> lhs_var);
 
 	// Gets the default Dbase
 	static DB & write_db() { return *def_db_; }
@@ -104,11 +104,11 @@ public:
 	Var variable(long i) { return variable_[i]; }
 	const Var variable(long i) const { return variable_[i]; }
 
-	long add_function (string n, string t, RVector<string> s);
-	long add_func_call (long f, string c, long r, long node);
-	void add_variable (long f, string n, string t, RVector<string> s,
+	long add_function (std::string n, std::string t, rstd::RVector<std::string> s);
+	long add_func_call (long f, std::string c, long r, long node);
+	void add_variable (long f, std::string n, std::string t, rstd::RVector<std::string> s,
 							long size);
-	void add_parameter (long f, string n, string t, RVector<string> s);
+	void add_parameter (long f, std::string n, std::string t, rstd::RVector<std::string> s);
 	void add_func_call_arg (long f, long c, long a, ArgType atype);
 
 	// query
@@ -117,13 +117,13 @@ public:
 	long size_variable () { return variable_.size(); }
 	const long size_variable () const { return variable_.size(); }
 
-	long func_map (string s);
-	long var_map (string s);
+	long func_map (std::string s);
+	long var_map (std::string s);
 	void set_function_defined (long f) { function_[f].set_defined(); }
-	long get_literal_id (string s);
+	long get_literal_id (std::string s);
 
-	bool type_map_insert(string s, long length);
-	long type_map_lookup(string s);
+	bool type_map_insert(std::string s, long length);
+	long type_map_lookup(std::string s);
 
 	////////////////////////////////////////
 	// AST related functions
@@ -132,15 +132,15 @@ public:
 	void interpret_tree();
 
 	// AST analysis helper functions
-	long get_ancestor (long n, string s);
-	long has_child (long n, string s);
-	string node_child_name (long n, long c);
-	string node_parent_name (long n);
-	string get_first_var_child (long n, long curr_function);
+	long get_ancestor (long n, std::string s);
+	long has_child (long n, std::string s);
+	std::string node_child_name (long n, long c);
+	std::string node_parent_name (long n);
+	std::string get_first_var_child (long n, long curr_function);
 	long get_next_literal (long tn);
 
 	// AST construction
-	void add_tree_node(string str, int num_subtrees, string space);
+	void add_tree_node(std::string str, int num_subtrees, std::string space);
 
 	// output functions
 	void print_terminals () const;
@@ -148,12 +148,12 @@ public:
 	void print_tgraph_vcg ();
 	void print_tree_vcg () const;
 
-	string create_var_name (string s, long f);
+	std::string create_var_name (std::string s, long f);
 };
 
 // utility functions
-void vector_merge (RVector<string> a, RVector<string> b,RVector<string> &out);
-ostream & operator<<(ostream & os, const DB & db_a);
+void vector_merge (rstd::RVector<std::string> a, rstd::RVector<std::string> b,rstd::RVector<std::string> &out);
+std::ostream & operator<<(std::ostream & os, const DB & db_a);
 #endif
 
 

@@ -1,4 +1,4 @@
-// Copyright 2000 by Robert Dick.
+// Copyright 2008 by Robert Dick.
 // All rights reserved.
 
 #ifndef R_FUNCTIONAL_H_
@@ -8,6 +8,7 @@
 against deletes through a pointer to the base class.  Provides simple
 functional objects. */
 
+namespace rstd {
 /*###########################################################################*/
 template <class Arg, class Result>
 struct runary_function {
@@ -36,7 +37,7 @@ template <typename T>
 
 template <typename T>
 	struct ptr_reference : public runary_function<T &, T *>
-	{ T * operator()(T &) { return &x; } };
+	{ T * operator()(T & x) { return &x; } };
 
 /*===========================================================================*/
 template <typename T>
@@ -50,6 +51,5 @@ struct deref_equal_to : public rbinary_function<const T *, const T *, bool> {
 	bool operator()(const T * a, const T * b) { return *a == *b; }
 };
 
-/*###########################################################################*/
-#include "RFunctional.cct"
+}
 #endif
