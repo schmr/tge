@@ -20,8 +20,9 @@ they are all held in one location.
 #include <iosfwd>
 #include <exception>
 #include <iostream>
+#include "RVector.h"
 
-template <typename> class RVector;
+//template <typename> class RVector;
 
 /*###########################################################################*/
 // Handles arguments to the program.
@@ -60,7 +61,7 @@ public:
 	void parse_error(std::ostream & os = std::cout,
 		const char * message = "Parse error") const;
 
-	const RVector<std::string> get_line();
+	const rstd::RVector<std::string> get_line();
 	int get_rand_seed () { return rand_seed; }
 
 	// query

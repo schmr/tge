@@ -28,28 +28,28 @@ connectivity methods are inherited from a foundation graph template.
 // C code.  An "action" consists of elements such as loops,
 // statements, function calls, and variable uses.
 class Node {
-	string name_;
-	RVector<string> action_;   // List of "actions" in node
+	std::string name_;
+	rstd::RVector<std::string> action_;   // List of "actions" in node
 	long start_;	// Treenode val of first statement
 	long end_;		// Treenode val of last statement
-	set<long> var_use_;	// indecies of variables used in node
-	set<long> var_mod_;	// indecies of variables updated in node
-	RVector<long> func_;
-	map<long, long> func_map_;
+	std::set<long> var_use_;	// indecies of variables used in node
+	std::set<long> var_mod_;	// indecies of variables updated in node
+	rstd::RVector<long> func_;
+	std::map<long, long> func_map_;
 	bool is_assign_node_;
 	bool is_statement_node_;
 	bool is_loop_or_cond_node_;
 	TimeUnit time_unit_;    // Execution time for code in node
 public:
 	// Constructor
-	Node (string n);
+	Node (std::string n);
 
 	// Update methods
-	void add_action (string s, long tn);
+	void add_action (std::string s, long tn);
 	void add_var_use (long v);
 	void add_var_mod (long v);
-	void add_var_use (RVector<long> v);
-	void add_var_mod (RVector<long> v);
+	void add_var_use (rstd::RVector<long> v);
+	void add_var_mod (rstd::RVector<long> v);
 	void add_func (long v);
 	void set_time_unit (long s, long us);
 
@@ -57,18 +57,18 @@ public:
 	bool no_actions () { return action_.empty(); }
 	long func_map (long v);	
 
-	string name() { return name_; }
-	const string name() const { return name_; }
-	RVector<string> action() { return action_; }
-	const RVector<string> action() const { return action_; }
+	std::string name() { return name_; }
+	const std::string name() const { return name_; }
+	rstd::RVector<std::string> action() { return action_; }
+	const rstd::RVector<std::string> action() const { return action_; }
 	long start () { return start_; }
 	const long start () const { return start_; }
-	set<long> var_use() { return var_use_; }
-	const set<long> var_use() const { return var_use_; }
-	set<long> var_mod() { return var_mod_; }
-	const set<long> var_mod() const { return var_mod_; }
-	RVector<long> func() { return func_; }
-	const RVector<long> func() const { return func_; }
+	std::set<long> var_use() { return var_use_; }
+	const std::set<long> var_use() const { return var_use_; }
+	std::set<long> var_mod() { return var_mod_; }
+	const std::set<long> var_mod() const { return var_mod_; }
+	rstd::RVector<long> func() { return func_; }
+	const rstd::RVector<long> func() const { return func_; }
 	bool is_assign_node() { return is_assign_node_; }
 	const bool is_assign_node() const { return is_assign_node_; }
 	bool is_statement_node() { return is_statement_node_; }
@@ -84,7 +84,7 @@ public:
 // cause the dependency.
 class Edge {
 	long val_;
-	set<long> vars_;
+	std::set<long> vars_;
 public:
 	// Constructor
 	Edge (long v);
@@ -92,35 +92,35 @@ public:
 	// Update
 	void set_val (long v) { val_ = v; }
 	void add_var (long s) { vars_.insert(s); }
-	void set_vars (set<long> s) { vars_ = s; }
+	void set_vars (std::set<long> s) { vars_ = s; }
 
 	// Query
 	long val() { return val_; }
 	const long val() const { return val_; }
-	set<long> vars() { return vars_; }
-	const set<long> vars() const { return vars_; }
+	std::set<long> vars() { return vars_; }
+	const std::set<long> vars() const { return vars_; }
 };
 
 // TGraph inherits from Graph template.  It contains Nodes and
 // Edges.  The connectivity methods come from the Graph template.
 // Info defined here is specific to task (dependence) graphs.
 // (A dependence graph is a task graph without node or edge weights.)
-class TGraph : public Graph<Node, Edge> {
+class TGraph : public rstd::Graph<Node, Edge> {
 	long val_;
-	string name_;    // name of the function this graph is for
+	std::string name_;    // name of the function this graph is for
 	TimeUnit time_unit_;   // execution time of whole function
-	RVector<long> tree_node_starts_;
+	rstd::RVector<long> tree_node_starts_;
 
 	// 3 lists to sort out nodes by type slightly
-	RVector<long> func_call_nodes_;  // nodes with function calls
-	RVector<long> statement_nodes_;  // nodes with statement ends
-	RVector<long> loop_or_cond_nodes_;  // nodes with loop/conds 
+	rstd::RVector<long> func_call_nodes_;  // nodes with function calls
+	rstd::RVector<long> statement_nodes_;  // nodes with statement ends
+	rstd::RVector<long> loop_or_cond_nodes_;  // nodes with loop/conds 
 public:
 	// Constructor
-	TGraph(string n);
+	TGraph(std::string n);
 
 	// interface methods
-	void print_vcg_inside (ofstream &out_file);
+	void print_vcg_inside (std::ofstream &out_file);
 	long get_new_node (long id);
 	void make_depend_arcs ();
 	void compact_graph();
@@ -129,22 +129,22 @@ public:
 	long find_fc_node(long tn);
 	long find_se_node(long tn);
 	long find_lc_node(long tn);
-	set<long> determine_vars_touched();
+	std::set<long> determine_vars_touched();
 	void set_time_unit (TimeUnit t);
 
 	// query
-	string name() { return name_; }
-	const string name() const { return name_; }
+	std::string name() { return name_; }
+	const std::string name() const { return name_; }
 	TimeUnit time_unit() { return time_unit_; }
 	const TimeUnit time_unit() const { return time_unit_; }
-	RVector<long> tree_node_starts() { return tree_node_starts_; }
-	const RVector<long> tree_node_starts() const { return tree_node_starts_; }
-	RVector<long> func_call_nodes() { return func_call_nodes_; }
-	const RVector<long> func_call_nodes() const { return func_call_nodes_; }
-	RVector<long> statement_nodes() { return statement_nodes_; }
-	const RVector<long> statement_nodes() const { return statement_nodes_; }
-	RVector<long> loop_or_cond_nodes() { return loop_or_cond_nodes_; }
-	const RVector<long> loop_or_cond_nodes() const{return loop_or_cond_nodes_;}
+	rstd::RVector<long> tree_node_starts() { return tree_node_starts_; }
+	const rstd::RVector<long> tree_node_starts() const { return tree_node_starts_; }
+	rstd::RVector<long> func_call_nodes() { return func_call_nodes_; }
+	const rstd::RVector<long> func_call_nodes() const { return func_call_nodes_; }
+	rstd::RVector<long> statement_nodes() { return statement_nodes_; }
+	const rstd::RVector<long> statement_nodes() const { return statement_nodes_; }
+	rstd::RVector<long> loop_or_cond_nodes() { return loop_or_cond_nodes_; }
+	const rstd::RVector<long> loop_or_cond_nodes() const{return loop_or_cond_nodes_;}
 
 	// Routines for merging
 	bool check_if_merge_forms_cycle (vertex_index a, vertex_index b);

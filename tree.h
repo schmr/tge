@@ -27,15 +27,15 @@ class TreeNode {
 	// 'whitespace_' is just for formatting output
 	// 'subtree_size_' equals the number of nodes in all subtrees of
 	//      this node
-	string name_;
-	string whitespace_;
+	std::string name_;
+	std::string whitespace_;
 	long subtree_size_;
 	long parent_;
-	RVector<long> children_;
+	rstd::RVector<long> children_;
 public:
 	// Constructors
 	TreeNode();
-	TreeNode(string str, string space);
+	TreeNode(std::string str, std::string space);
 
 	// methods for updating object
 	void add_child (long c) { children_.push_back(c); }
@@ -46,14 +46,14 @@ public:
 	// query methods
 	long subtree_size () { return subtree_size_; }
 	const long subtree_size () const { return subtree_size_; }
-	string name() { return name_; }
-	const string name() const { return name_; }
-	string whitespace() { return whitespace_; }
-	const string whitespace() const { return whitespace_; }
+	std::string name() { return name_; }
+	const std::string name() const { return name_; }
+	std::string whitespace() { return whitespace_; }
+	const std::string whitespace() const { return whitespace_; }
 	long parent() { return parent_; }
 	const long parent() const { return parent_; }
 
-	RVector<long> children() { return children_; }
+	rstd::RVector<long> children() { return children_; }
 	long child(long x) { return children_[x]; }
 	void set_subtree_size (long size) { subtree_size_ = size; }
 };

@@ -79,8 +79,8 @@ public:
 		typedef RawGraph::vertex_type self;
 
 	public:
-		typedef RVector<edge_index>::iterator edge_iterator;
-		typedef RVector<edge_index>::const_iterator const_edge_iterator;
+		typedef rstd::RVector<edge_index>::iterator edge_iterator;
+		typedef rstd::RVector<edge_index>::const_iterator const_edge_iterator;
 
 		vertex_type() : out_(), in_() {}
 		edge_index size_out() const { return out_.size(); }
@@ -102,8 +102,8 @@ public:
 		comp_type comp(const self & a) const;
 
 	protected:
-			RVector<edge_index> out_;
-			RVector<edge_index> in_;
+		rstd::RVector<edge_index> out_;
+		rstd::RVector<edge_index> in_;
 
 		friend class rstd::RawGraph;
 	};
@@ -132,12 +132,12 @@ public:
 	};
 
 private:
-	typedef RVector<vertex_type> v_impl;
-	typedef RVector<edge_type> e_impl;
+	typedef rstd::RVector<vertex_type> v_impl;
+	typedef rstd::RVector<edge_type> e_impl;
 
 public:
 // Typedefs
-	typedef ptrdiff_t difference_type;
+	typedef std::ptrdiff_t difference_type;
 
 	typedef v_impl::iterator vertex_iterator;
 	typedef e_impl::iterator edge_iterator;
@@ -225,63 +225,63 @@ public:
 	bool nodes_linked(vertex_index a, vertex_index b) const;
 
 // Returns a DFS-ordered RVector of vertex indices.
-	const RVector<vertex_index>
+	const rstd::RVector<vertex_index>
 		dfs(vertex_index start, bool reverse = false) const;
 
-	const RVector<vertex_index>
-		dfs(RVector<vertex_index> start, bool reverse = false) const;
+	const rstd::RVector<vertex_index>
+		dfs(rstd::RVector<vertex_index> start, bool reverse = false) const;
 
-// Returns a BFS-ordered RVector of vertex indices.
-	const RVector<vertex_index>
+// Returns a BFS-ordered rstd::RVector of vertex indices.
+	const rstd::RVector<vertex_index>
 		bfs(vertex_index start, bool reverse = false) const;
 
-	const RVector<vertex_index>
-		bfs(RVector<vertex_index> start, bool reverse = false) const;
+	const rstd::RVector<vertex_index>
+		bfs(rstd::RVector<vertex_index> start, bool reverse = false) const;
 
 // Return every vertex's parent vertex and shortest path distance
-	const RVector<std::pair<vertex_index, double> >
+	const rstd::RVector<std::pair<vertex_index, double> >
 		shortest_path(vertex_index start) const;
 
-// Returns a topological sort-ordered RVector of vertex indices.
-	const RVector<vertex_index> top_sort(vertex_index start,
+// Returns a topological sort-ordered rstd::RVector of vertex indices.
+	const rstd::RVector<vertex_index> top_sort(vertex_index start,
 		bool reverse = false) const;
 
-	const RVector<vertex_index> top_sort(const RVector<vertex_index> & start,
+	const rstd::RVector<vertex_index> top_sort(const rstd::RVector<vertex_index> & start,
 		bool reverse = false) const;
 
 // BFS which ignores edge directions.
-	const RVector<vertex_index>
+	const rstd::RVector<vertex_index>
 		outward_crawl(vertex_index start) const;
 
 // Disconnected vertices will have depths less than 0.
-	const RVector<int> max_depth(vertex_index start,
+	const rstd::RVector<int> max_depth(vertex_index start,
 		bool reverse = false) const;
 
-	const RVector<int> max_depth(const RVector<vertex_index> & start,
+	const rstd::RVector<int> max_depth(const rstd::RVector<vertex_index> & start,
 		bool reverse = false) const;
 
 		static const vertex_index INVALID_VINDEX;
 		static const edge_index INVALID_EINDEX;
 
 protected:
-	bool cyclic_recurse(RVector<big_bool> & visited,
+	bool cyclic_recurse(rstd::RVector<big_bool> & visited,
 		vertex_index start, vertex_index branch) const;
 
-	void dfs_recurse(RVector<vertex_index> & vec, RVector<big_bool> & visited,
+	void dfs_recurse(rstd::RVector<vertex_index> & vec, rstd::RVector<big_bool> & visited,
 		vertex_index branch, bool reverse) const;
 
-	void bfs_recurse(RVector<vertex_index> & vec, RVector<big_bool> & visited,
+	void bfs_recurse(rstd::RVector<vertex_index> & vec, rstd::RVector<big_bool> & visited,
 		vertex_index branch, bool reverse) const;
 
-	void top_sort_recurse(RVector<vertex_index> & vec,
-		RVector<big_bool> & visited, vertex_index branch,
+	void top_sort_recurse(rstd::RVector<vertex_index> & vec,
+		rstd::RVector<big_bool> & visited, vertex_index branch,
 		bool reverse) const;
 
-	void outward_crawl_recurse(RVector<vertex_index> & vec,
-		RVector<big_bool> & visited, vertex_index branch) const;
+	void outward_crawl_recurse(rstd::RVector<vertex_index> & vec,
+		rstd::RVector<big_bool> & visited, vertex_index branch) const;
 
-	void max_depth_recurse(RVector<int> & vec,
-		RVector<big_bool> & visited, vertex_index branch,
+	void max_depth_recurse(rstd::RVector<int> & vec,
+		rstd::RVector<big_bool> & visited, vertex_index branch,
 		bool reverse) const;
 
 private:
@@ -347,8 +347,8 @@ public:
 	const E & operator()(edge_index i) const { return e_data_[i]; }
 
 private:
-		RVector<V> v_data_;
-		RVector<E> e_data_;
+		rstd::RVector<V> v_data_;
+		rstd::RVector<E> e_data_;
 };
 
 /*===========================================================================*/

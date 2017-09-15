@@ -18,7 +18,7 @@ source code.
 //************************************************************
 
 // Constructor
-Var::Var (string n, string t, RVector<string> s, long elements) :
+Var::Var (std::string n, std::string t, rstd::RVector<std::string> s, long elements) :
 	name_(n), type_(t), total_size_(-1), num_elements_(elements), stype_(s), 
 	is_pointer_(false), is_static_(false)
 {
@@ -49,25 +49,25 @@ void Var::determine_total_size (long type_size)
 //************************************************************
 
 // Constructor
-FuncCall::FuncCall (string n, long r, long nnode) :
+FuncCall::FuncCall (std::string n, long r, long nnode) :
 	name_(n), parms_(), commas_(0), root_node_(r), fn_name_node_(nnode)
 {
 }
 
 // Add a dynamic parameter to the func call
-void FuncCall::add_parm(pair<long,ArgType> p)
+void FuncCall::add_parm(std::pair<long,ArgType> p)
 {
-//cout << "Comma: " << commas_ << "  " << root_node_ << endl;
+//cout << "Comma: " << commas_ << "  " << root_node_ << std::endl;
 //	Rassert(parms_.size() < (commas_ + 1));
 
 	if (parms_.size() < (commas_ + 1)) {
 		while (parms_.size() < commas_) {
-			parms_.push_back(pair<long,ArgType> (-1, CONST));
+			parms_.push_back(std::pair<long,ArgType> (-1, CONST));
 		}
 		parms_.push_back(p);
 	} else {
 		long b = parms_.size()-2;
-		cerr << "Note: Argument " << b << " is not added to parm list"
+		std::cerr << "Note: Argument " << b << " is not added to parm list"
 			<< " for " << name() << "[" << root_node_ << "]"
 			<< "because there is already one variable in the slot.\n";
 	}
@@ -77,15 +77,15 @@ void FuncCall::add_parm(pair<long,ArgType> p)
 void FuncCall::add_comma()
 {
 	commas_++;
-//cout << "nc: " << commas_ << "  " << root_node_ << endl;
+//cout << "nc: " << commas_ << "  " << root_node_ << std::endl;
 }
 
 // Help keep parameters in order
 void FuncCall::balance_commas()
 {
-//cout << " Bal  " << root_node_ << endl;
+//cout << " Bal  " << root_node_ << std::endl;
 	while (parms_.size() <= commas_) {
-		parms_.push_back(pair<long,ArgType> (-1, CONST));
+		parms_.push_back(std::pair<long,ArgType> (-1, CONST));
 	}
 	commas_ = 0;
 }
@@ -94,7 +94,7 @@ void FuncCall::balance_commas()
 // Function
 //************************************************************
 
-Function::Function (string n, string t, RVector<string> s) :
+Function::Function (std::string n, std::string t, rstd::RVector<std::string> s) :
 	name_(n), type_(t), stype_(s), parameter_(), variable_(), var_use_(), 
 	action_(), action_type_(), action_tree_node_(),
 	func_call_(), assign_node_(),
@@ -107,9 +107,9 @@ Function::Function (string n, string t, RVector<string> s) :
 // Analysis routines
 //--------------------------------------------------
 // List of names of all functions called by this function
-RVector<string> Function::func_call_names ()
+rstd::RVector<std::string> Function::func_call_names ()
 {
-	RVector<string> call_list;
+	rstd::RVector<std::string> call_list;
 	MAP (x, func_call_.size()) {
 		call_list.push_back(func_call_[x].name());
 	}
@@ -117,7 +117,7 @@ RVector<string> Function::func_call_names ()
 }
 
 // Add all variables in 'vars' to 'target' alias set
-void Function::add_aliases (long target, RVector<long> vars, 
+void Function::add_aliases (long target, rstd::RVector<long> vars, 
 				bool clear_old_alias)
 {
 	long pointer = target;
@@ -130,17 +130,17 @@ void Function::add_aliases (long target, RVector<long> vars,
 					v2v_alias_[vars[x]].begin(), v2v_alias_[vars[x]].end(),
 					inserter(v2v_alias_[pointer], v2v_alias_[pointer].begin()));
 	}
-//	cout << pointer << " new v2v_set " << v2v_alias_[pointer] << endl;
+//	cout << pointer << " new v2v_set " << v2v_alias_[pointer] << std::endl;
 }
 
 // Return the indicies of the variables 'v' can alias to.
-RVector<long> Function::v_alias_vec (long v)
+rstd::RVector<long> Function::v_alias_vec (long v)
 {
-   RVector<long> ret_val;
+   rstd::RVector<long> ret_val;
    ret_val.push_back(v);
-   set<long>::iterator i;
+   std::set<long>::iterator i;
 
-   set<long> s = v2v_alias_[v];
+   std::set<long> s = v2v_alias_[v];
    for (i = s.begin(); i != s.end(); i++) {
       long t = *i;
       ret_val.push_back(t);      
@@ -149,9 +149,9 @@ RVector<long> Function::v_alias_vec (long v)
 }
 
 // Return the indicies of the parameters of the function
-set<long> Function::parameter_set()
+std::set<long> Function::parameter_set()
 {
-	set<long> ret_val;
+	std::set<long> ret_val;
 	MAP (x, parameter_.size()) {
 		ret_val.insert(parameter_[x]);
 	}
@@ -177,7 +177,7 @@ bool Function::var_in_v_alias (long v, long v_set_num)
 // Remove 'v' from 'v_set_num' variable alias set
 void Function::remove_from_v_alias (long v, long v_set_num)
 {
-	set<long>::iterator i = v2v_alias_[v_set_num].find(v);
+	std::set<long>::iterator i = v2v_alias_[v_set_num].find(v);
 	Rassert(i != v2v_alias_[v_set_num].end());
 	v2v_alias_[v_set_num].erase(i);
 }
@@ -191,9 +191,9 @@ void Function::append_to_v_alias (long target_num, long source_num)
 }
 
 // Return variables aliased to parameters and the arguments themselves
-set<long> 
-Function::func_call_cleanup_aliases (RVector<pair<long,ArgType> > p, 
-												RVector<long> parms)
+std::set<long> 
+Function::func_call_cleanup_aliases (rstd::RVector<std::pair<long,ArgType> > p, 
+												rstd::RVector<long> parms)
 {
 	// parms: part of header definition
 	// p: dynamic parm binding
@@ -218,7 +218,7 @@ Function::func_call_cleanup_aliases (RVector<pair<long,ArgType> > p,
 
 	// Prepare a return value encompassing: variables aliased to parms,
 	//    the arguments themselves, 
-	set<long> s;
+	std::set<long> s;
 	MAP (x, p.size()) {
 		if (p[x].second == 0) {
 			s.insert(p[x].first);
@@ -234,7 +234,7 @@ Function::func_call_cleanup_aliases (RVector<pair<long,ArgType> > p,
 // "Function" creation routines
 //--------------------------------------------------
 // Add a function call to the current function
-long Function::add_func_call(string n, long r, long nnode)
+long Function::add_func_call(std::string n, long r, long nnode)
 {
 	func_call_.push_back(FuncCall(n, r, nnode));
 	return (func_call_.size() - 1);
@@ -262,11 +262,11 @@ void Function::add_elipses()
 // Add an argument to a funciton call
 void Function::add_func_call_arg (long c, long arg, ArgType arg_type)
 {
-	func_call_[c].add_parm(pair<long,ArgType> (arg,arg_type));
+	func_call_[c].add_parm(std::pair<long,ArgType> (arg,arg_type));
 }
 
 // Add an action (actions defined in tree.cc file)
-void Function::add_action (string n, ActionType t, long tn)
+void Function::add_action (std::string n, ActionType t, long tn)
 {
 	action_.push_back(n);
 	action_type_.push_back(t);
@@ -289,17 +289,17 @@ void Function::balance_func_call_commas (long fc_num)
 // Printout routines
 //**************************************************
 
-ostream &
-operator<<(ostream & os, const Var & var_a) {
+std::ostream &
+operator<<(std::ostream & os, const Var & var_a) {
 	os << "    Var:  " << var_a.name();
 	os << "  Type: " << var_a.type();
-	os << "  SType: " << var_a.stype() << endl;
+	os << "  SType: " << var_a.stype() << std::endl;
 
 	return os;
 }
 
-ostream &
-operator<<(ostream & os, const RVector<pair<long,ArgType> > &vp_a) {
+std::ostream &
+operator<<(std::ostream & os, const rstd::RVector<std::pair<long,ArgType> > &vp_a) {
 	MAP (x, vp_a.size()) {
 		if (vp_a[x].second == VAR) {
 			os << vp_a[x].first << " ";
@@ -311,23 +311,23 @@ operator<<(ostream & os, const RVector<pair<long,ArgType> > &vp_a) {
 	return os;
 }
 
-ostream &
-operator<<(ostream & os, const FuncCall & fn_a) {
+std::ostream &
+operator<<(std::ostream & os, const FuncCall & fn_a) {
 	os << "    Func_call:  " << fn_a.name();
-	os << "  parms: " << fn_a.parms() << endl;
+	os << "  parms: " << fn_a.parms() << std::endl;
 
 	return os;
 }
 
-ostream &
-operator<<(ostream & os, const Function & fn_a) {
-	os << fn_a.defined() << " Function:  " << fn_a.name() << endl;
-	os << "  Type: " << fn_a.type() << "  " << fn_a.stype() << endl;
-	os << "  Parameters: " << endl << fn_a.parameter() << endl;
-	os << "  Variables: " << fn_a.variable() << endl;
-	os << "  Function calls: " << endl << fn_a.func_call() << endl;
-	os << "  Var use: " << fn_a.var_use() << endl;
-	os << "  Actions: " << fn_a.action() << endl;
+std::ostream &
+operator<<(std::ostream & os, const Function & fn_a) {
+	os << fn_a.defined() << " Function:  " << fn_a.name() << std::endl;
+	os << "  Type: " << fn_a.type() << "  " << fn_a.stype() << std::endl;
+	os << "  Parameters: " << std::endl << fn_a.parameter() << std::endl;
+	os << "  Variables: " << fn_a.variable() << std::endl;
+	os << "  Function calls: " << std::endl << fn_a.func_call() << std::endl;
+	os << "  Var use: " << fn_a.var_use() << std::endl;
+	os << "  Actions: " << fn_a.action() << std::endl;
 	return os;
 }
 

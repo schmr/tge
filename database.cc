@@ -14,6 +14,7 @@ NOTE: LHS -> left hand side
 
 #include "database.h"
 #include "ArgPack.h"
+#include "RVector.h"
 #include <algorithm>
 
 #define PARAMETER_DATA_SIZE 0
@@ -31,7 +32,7 @@ DB::DB () :
 {
 	Rassert(!def_db_);
 	def_db_ = this;
-	RVector<string> s;
+	rstd::RVector<std::string> s;
 
 	add_function("global_defs", "void", s);
 	add_variable(0, "global_alias_var", "void", s, 1);
@@ -81,7 +82,7 @@ void DB::profile()
 // function already exists, it just returns that functions id
 // number.  The redeclaration flag is used to prevent duplication
 // of the parameter list.
-long DB::add_function (string n, string t, RVector<string> s)
+long DB::add_function (std::string n, std::string t, rstd::RVector<std::string> s)
 {
 	if (func_map_.find(n) == func_map_.end()) {
 		fn_redeclaration_ = false;
@@ -97,7 +98,7 @@ long DB::add_function (string n, string t, RVector<string> s)
 // Adds a function call to the current function (f).
 // 'c' is the callee name, 'r' is the root of the callee subtree in the
 // AST, and 'node' is the node number in the AST
-long DB::add_func_call (long f, string c, long r, long node)
+long DB::add_func_call (long f, std::string c, long r, long node)
 {
 	return function_[f].add_func_call(c, r, node);
 }
@@ -106,7 +107,7 @@ long DB::add_func_call (long f, string c, long r, long node)
 // 'n' is the name of the variable, 't' is the type, 's' is a vector
 // of modifying words like 'extern' and 'pointer'.  'size' is equal
 // to one for scalars, or indicates array size.
-void DB::add_variable (long f, string n, string t, RVector<string> s,
+void DB::add_variable (long f, std::string n, std::string t, rstd::RVector<std::string> s,
 								long size)
 {
 	// Check if we've seen this variable name before in this scope.
@@ -129,7 +130,7 @@ void DB::add_variable (long f, string n, string t, RVector<string> s,
 
 // Add a parameter declaration for the current function 'f'.
 // 'n', 't', and 's' have the same meaning as they did in add_variable.
-void DB::add_parameter (long f, string n, string t, RVector<string> s)
+void DB::add_parameter (long f, std::string n, std::string t, rstd::RVector<std::string> s)
 {
 	if (!fn_redeclaration_) {
 		if (var_map_.find(n) == var_map_.end()) {
@@ -138,8 +139,8 @@ void DB::add_parameter (long f, string n, string t, RVector<string> s)
 			variable_.push_back(Var(n, t, s, PARAMETER_DATA_SIZE));
 			var_map_[n] = variable_.size() - 1;
 		} else {
-			cerr << "Parm name (" << n << ") exists already! Probably part of";
-			cerr << " standard library." <<  endl;
+			std::cerr << "Parm name (" << n << ") exists already! Probably part of";
+			std::cerr << " standard library." <<  std::endl;
 		}
 	}
 	// We don't support nested scopes, but needed to 
@@ -154,8 +155,8 @@ void DB::add_func_call_arg (long f, long c, long a, ArgType atype)
 	function_[f].add_func_call_arg(c, a, atype);
 }
 
-// Lookup map for string -> function index value.
-long DB::func_map (string s)
+// Lookup map for std::string -> function index value.
+long DB::func_map (std::string s)
 {
 	if (func_map_.find(s) != func_map_.end()) {
 		return func_map_[s];
@@ -164,8 +165,8 @@ long DB::func_map (string s)
 	}
 }
 
-// Lookup map for string -> variable index value.
-long DB::var_map (string s)
+// Lookup map for std::string -> variable index value.
+long DB::var_map (std::string s)
 {
 	if (var_map_.find(s) != var_map_.end()) {
 		return var_map_[s]; 
@@ -175,7 +176,7 @@ long DB::var_map (string s)
 }
 
 // Lookup map to set data type size
-bool DB::type_map_insert(string s, long length)
+bool DB::type_map_insert(std::string s, long length)
 {
 	if (type_map_.find(s) != type_map_.end()) {
 		return false;
@@ -186,7 +187,7 @@ bool DB::type_map_insert(string s, long length)
 }
 
 // Lookup map to get data type size
-long DB::type_map_lookup(string s)
+long DB::type_map_lookup(std::string s)
 {
 	if (type_map_.find(s) != type_map_.end()) {
 		return type_map_[s];
@@ -196,7 +197,7 @@ long DB::type_map_lookup(string s)
 }
 
 // Same as var_map(s)
-long DB::get_literal_id (string s)
+long DB::get_literal_id (std::string s)
 {
 	long a = var_map(s);
 	return a;
@@ -222,7 +223,7 @@ void DB::build_call_graph()
 
 	// For each function, draw an outgoing edge to each function it calls
 	MAP (x, function_.size()) {
-		RVector<string> call_list = function_[x].func_call_names();
+		rstd::RVector<std::string> call_list = function_[x].func_call_names();
 
 		MAP (y, call_list.size()) {
 			long called_fn = func_map (call_list[y]);
@@ -247,7 +248,7 @@ void DB::build_call_graph()
 void DB::do_dependence ()
 {
 	Rassert (func_map ("main") != -1);
-	RVector<long> fn_list = call_graph_.top_sort (func_map ("main"));
+	rstd::RVector<long> fn_list = call_graph_.top_sort (func_map ("main"));
 	fn_list.push_back(0);
 
 	// Generate a TG for each function.
@@ -270,22 +271,22 @@ TGraph DB::fn_dep (long id)
 	// block depth indicates level of nesting for loops and conditionals
 	long block_depth = 0;
 	// stores nesting information for functions
-	RVector<long> func_node_stack, brac_stack;
+	rstd::RVector<long> func_node_stack, brac_stack;
 	// n is the index value of the current node being modified
 	long n = fg.get_new_node(id);
 
 	// actions and types are keywords (the type is used for the switch)
-	RVector<string> action = function_[id].action();
-	RVector<ActionType> action_type = function_[id].action_type();
-	RVector<long> action_tree_node = function_[id].action_tree_node();
+	rstd::RVector<std::string> action = function_[id].action();
+	rstd::RVector<ActionType> action_type = function_[id].action_type();
+	rstd::RVector<long> action_tree_node = function_[id].action_tree_node();
 
-	RVector<pair<long,long> > assign = function_[id].assign_node();
-	RVector<long> vm;
+	rstd::RVector<std::pair<long,long> > assign = function_[id].assign_node();
+	rstd::RVector<long> vm;
 	long fc_num = 0, tmp;
 	long last_state_end = 0;
 	long assign_target = -1;
 	long assign_num = 0, assign_ctr = 0;
-	set<long> local_vars;
+	std::set<long> local_vars;
 
 	function_[id].init_alias_vectors(variable_.size());
 
@@ -299,7 +300,7 @@ TGraph DB::fn_dep (long id)
 	MAP (x, action.size()) {
 		// get information about the action:  type, name, AST node location
 		ActionType atype = action_type[x];
-		string s = action[x];
+		std::string s = action[x];
 		long tn = action_tree_node[x];
 		bool draw_assign_arcs = false;
 		long fc_func;		// function callee function index
@@ -380,7 +381,7 @@ TGraph DB::fn_dep (long id)
 				block_depth--;
 				fg[n].add_action(s,tn);
 				if (!block_depth) {
-					RVector<long> lhs_var;
+					rstd::RVector<long> lhs_var;
 					while (assign_ctr) {
 						vm = add_alias_data(id, assign[assign_num]);
 						fg[n].add_var_mod(vm);
@@ -412,7 +413,7 @@ break;//KSV
 				if (!block_depth) n = fg.get_new_node(id);
 				break;
 			case FN_START:
-//				cout << function_[id].func_call()[fc_num];
+//				std::cout << function_[id].func_call()[fc_num];
 				if (!block_depth) n = fg.get_new_node(id);
 				fg[n].add_action(s,tn);
 				func_node_stack.push_back(n);
@@ -420,7 +421,7 @@ break;//KSV
 				fc_func = func_map(((function_[id].func_call())[fc_num]).name());
 				fg[n].add_func(fc_func);
 				if (!function_[fc_func].defined()) {
-					set<long> vt;
+					std::set<long> vt;
 					vt.insert(0);
 					function_[fc_func].set_vars_touched(vt);
 					fg[n].add_var_mod(0);
@@ -473,9 +474,9 @@ break;//KSV
 	// a call to this function.  Currently, assumes that any variable
 	// used would be modified as well.
 	fg.find_tree_node_starts();
-	set<long> vars_touched = fg.determine_vars_touched();
-	set<long> new_touched;
-//	cout << function_[id].name() << ":  " << vars_touched << endl;
+	std::set<long> vars_touched = fg.determine_vars_touched();
+	std::set<long> new_touched;
+//	std::cout << function_[id].name() << ":  " << vars_touched << std::endl;
 	set_difference(vars_touched.begin(), vars_touched.end(),
 						local_vars.begin(), local_vars.end(),
 						inserter(new_touched, new_touched.begin()));
@@ -484,16 +485,16 @@ break;//KSV
 // KSV remove this set difference for stricter analysis
 	if (!(ArgPack::ap().strict_dependence())) {
 		new_touched.clear();
-		set<long> parm_set = function_[id].parameter_set();
+		std::set<long> parm_set = function_[id].parameter_set();
 		set_difference(vars_touched.begin(), vars_touched.end(),
 						parm_set.begin(), parm_set.end(),
 						inserter(new_touched, new_touched.begin()));
 		vars_touched = new_touched;
 	}
 
-//	cout << function_[id].name() << ":  " << vars_touched << endl;
+//	std::cout << function_[id].name() << ":  " << vars_touched << std::endl;
 //	if (function_[id].name() == "print_array") {
-//		cout << "STUFF: " << vars_touched << endl;
+//		std::cout << "STUFF: " << vars_touched << std::endl;
 //	}
 
 	// Finally, record variables which are used by this function
@@ -505,7 +506,7 @@ break;//KSV
 // the target of func call number 'fc_num'.  Note: 'fc_num' is NOT
 // the number of the callee, rather it is the X'th function call
 // invoked by function 'id'!
-RVector<long> DB::do_func_call (long id, long fc_num)
+rstd::RVector<long> DB::do_func_call (long id, long fc_num)
 {
 	// Get callee function index and store in 'func'
 	FuncCall fc = function_[id].func_call()[fc_num];
@@ -513,16 +514,16 @@ RVector<long> DB::do_func_call (long id, long fc_num)
 
 	// 2 types of parms: static (in function header)
 	//                   call_time (in current function invocation)
-	RVector<long> static_parms = function_[func].parameter();
-	RVector<pair<long,ArgType> > call_time_parms = fc.parms();
+	rstd::RVector<long> static_parms = function_[func].parameter();
+	rstd::RVector<std::pair<long,ArgType> > call_time_parms = fc.parms();
 
-	RVector<long> ret_val;
-	set<long> arg_fc_vars;
+	rstd::RVector<long> ret_val;
+	std::set<long> arg_fc_vars;
 
 	// DEBUG STUFF: for when the 2 parms sizes are not equal
-//cout << "caller: " << function_[id].name() << "  ";
-//cout << fc.name() << "  " << call_time_parms.size() << "  " 
-//		<< static_parms.size() << endl;
+//std::cout << "caller: " << function_[id].name() << "  ";
+//std::cout << fc.name() << "  " << call_time_parms.size() << "  " 
+//		<< static_parms.size() << std::endl;
 	if (call_time_parms.size() != static_parms.size()) {
 //		if (!(ArgPack::ap().loosest_dependence())) {
 			Rassert(!(function_[func].defined()));
@@ -537,7 +538,7 @@ RVector<long> DB::do_func_call (long id, long fc_num)
 			// Handle nested function calls
 			// they should return which vars they touch
 			// Add those variables to ret_val
-			set<long> tset = function_[call_time_parms[x].first].vars_touched();
+			std::set<long> tset = function_[call_time_parms[x].first].vars_touched();
 			set_union(arg_fc_vars.begin(), arg_fc_vars.end(),
 							tset.begin(), tset.end(),
 							inserter(arg_fc_vars, arg_fc_vars.begin()));
@@ -548,7 +549,7 @@ RVector<long> DB::do_func_call (long id, long fc_num)
 		} else if (variable_[call_time_parms[x].first].is_pointer()) {
 			// update aliases based on parameters which are variables
 			if (x < static_parms.size()) {
-				RVector<long> p_alias=function_[func].v_alias_vec(static_parms[x]);
+				rstd::RVector<long> p_alias=function_[func].v_alias_vec(static_parms[x]);
 				function_[id].add_aliases (call_time_parms[x].first,p_alias,false);
 			}
 		}
@@ -558,14 +559,14 @@ RVector<long> DB::do_func_call (long id, long fc_num)
 	// Prepare return value (vars touched)
 	///////////////////////////////////////
 	// 'parm_set' is indicies of function's static parameters
-	set<long> parm_set = function_[func].parameter_set();
+	std::set<long> parm_set = function_[func].parameter_set();
    // Returns value encompassing: variables aliased to parms,
    //    and the arguments themselves
-	set<long> tmp = function_[id].func_call_cleanup_aliases (
+	std::set<long> tmp = function_[id].func_call_cleanup_aliases (
 													call_time_parms, static_parms);
 	// variables touched inside the function
-	set<long> v_touched = function_[func].vars_touched();
-	set<long> ret_set;
+	std::set<long> v_touched = function_[func].vars_touched();
+	std::set<long> ret_set;
 
 	// combine the sets to get the set of vars touched
 	set_union(arg_fc_vars.begin(), arg_fc_vars.end(),
@@ -582,7 +583,7 @@ RVector<long> DB::do_func_call (long id, long fc_num)
 	}
 
 	// convert set to vector
-	set<long>::iterator i;
+	std::set<long>::iterator i;
 	for (i = ret_set.begin(); i != ret_set.end(); i++){
 		long t = *i;
 		ret_val.push_back(t);
@@ -596,14 +597,14 @@ RVector<long> DB::do_func_call (long id, long fc_num)
 //       'a_node' gives the boundaries of the assignment
 // Note: This function should handle multiple assignments in a
 //       single line appropriately.
-RVector<long> DB::add_alias_data (long fn, pair<long,long> a_node)
+rstd::RVector<long> DB::add_alias_data (long fn, std::pair<long,long> a_node)
 {
 	long start = a_node.first;  // first AST node of assignment
 	long end = a_node.second;   // last AST node of assignment
 	long target = -1, assign_op = -1;
 	bool clear_old_alias = false;  // not used
-	RVector<long> v;
-	string str;
+	rstd::RVector<long> v;
+	std::string str;
 
 	//-----------------------------------------------------
 	// Walk through assignment from first AST node to end.
@@ -656,12 +657,12 @@ RVector<long> DB::add_alias_data (long fn, pair<long,long> a_node)
 
 // Gets the target of the assignment specified by 'a_node'.
 // (The target would be the left most variable.)
-long DB::get_assign_lhs_var (long fn, pair<long,long> a_node)
+long DB::get_assign_lhs_var (long fn, std::pair<long,long> a_node)
 {
 	long start = a_node.first, end = a_node.second;
 	long target = -1;
 	for (long i = start; i < end; i++) {
-		string str = create_var_name (tree_node_[i].name(), fn);
+		std::string str = create_var_name (tree_node_[i].name(), fn);
 		if (target == -1) {
 			// Only grabs first var on left of '=' sign
 			// this allows it to only get the 'a' in 'a[i]' statements
@@ -677,11 +678,11 @@ long DB::get_assign_lhs_var (long fn, pair<long,long> a_node)
 }
 
 // Give each var in 'lhs_var' the aliases of all the others
-void DB::update_lhs_var_aliases (long id, RVector<long> lhs_var)
+void DB::update_lhs_var_aliases (long id, rstd::RVector<long> lhs_var)
 {
-	set<long> s;
+	std::set<long> s;
 	MAP (x, lhs_var.size()) {
-		set<long> vs = function_[id].v2v_alias_var(lhs_var[x]);
+		std::set<long> vs = function_[id].v2v_alias_var(lhs_var[x]);
 		set_union(s.begin(), s.end(), vs.begin(), vs.end(),
 				inserter(s, s.begin()));
 	}
@@ -696,12 +697,12 @@ void DB::update_lhs_var_aliases (long id, RVector<long> lhs_var)
 // Generates the vcg file to view the call graph
 void DB::print_fgraph_vcg ()
 {
-	ofstream out;
-	string file_name = "call_graph.vcg";
+	std::ofstream out;
+	std::string file_name = "call_graph.vcg";
 	out.open(file_name.c_str());
 
 	if (!out) {
-		cout << "Cannot open output file";
+		std::cout << "Cannot open output file";
 		Rabort();
 	}
 
@@ -717,17 +718,17 @@ void DB::print_fgraph_vcg ()
 // Generates the vcg file to view the task graphs for each function
 void DB::print_tgraph_vcg ()
 {
-	ofstream out;
+	std::ofstream out;
 
 	// create subdirectory to put vcg files in
-	string dir_name = "tmp_vcg";
-	string sysstr = "mkdir " + dir_name;
+	std::string dir_name = "tmp_vcg";
+	std::string sysstr = "mkdir " + dir_name;
 	system(sysstr.c_str());
 
 	// For each function which contains nodes, create a vcg file
 	MAP (x, fg_.size()) {
 		if (fg_[x].size_vertex()) {
-			string s = "tmp_vcg/" + fg_[x].name();
+			std::string s = "tmp_vcg/" + fg_[x].name();
 			out.open(s.c_str());
 			Rassert(out);
 
@@ -745,23 +746,23 @@ void DB::print_tgraph_vcg ()
 }
 
 // output some database info...(Not used)
-ostream &
-operator<<(ostream & os, const DB & db_a) {
+std::ostream &
+operator<<(std::ostream & os, const DB & db_a) {
 	os << "Functions:\n";
 	MAP (x, db_a.size_function()) {
-		os << db_a.function(x) << endl;
+		os << db_a.function(x) << std::endl;
 	}
 	os << "Variables:\n";
 	MAP (x, db_a.size_variable()) {
-		os << db_a.variable(x) << endl;
+		os << db_a.variable(x) << std::endl;
 	}
 	return os;
 }
 
 // output method for a set of longs...
-ostream &operator <<(ostream &output, set<long> &sa)
+std::ostream &operator <<(std::ostream &output, std::set<long> &sa)
 {
-	set<long>::iterator i;
+	std::set<long>::iterator i;
 	for (i = sa.begin(); i != sa.end(); i++) {
 		output << *i << " ";
 	}

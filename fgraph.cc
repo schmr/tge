@@ -11,7 +11,7 @@
 #include <algorithm>
 
 // Constructor
-FNode::FNode (string n, long i) :
+FNode::FNode (std::string n, long i) :
 	name_(n), index_(i)
 {
 }
@@ -43,10 +43,10 @@ bool FGraph::in_subtree(long t, long n)
 // Determine which nodes are in the subtrees of other nodes
 void FGraph::setup_subtrees (long main_node)
 {
-	RVector<long> top = top_sort(main_node);
+	rstd::RVector<long> top = top_sort(main_node);
 	
 	MAP (x, size_vertex()) {
-		subtree_.push_back(set<long>());
+		subtree_.push_back(std::set<long>());
 	}
 
 	for (long i = top.size() - 1; i >= 0; i--) {
@@ -64,7 +64,7 @@ void FGraph::setup_subtrees (long main_node)
 }
 
 // Print graph in a vcg compatible format
-void FGraph::print_vcg_inside (ofstream &out_file)
+void FGraph::print_vcg_inside (std::ofstream &out_file)
 {
 	MAP (x, size_vertex()) {
 		out_file << "  node: { title: \"" 
