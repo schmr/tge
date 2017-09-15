@@ -13,10 +13,10 @@ indicate dependencies between the nodes.
 ************************************************************/
 
 #include "node.h"
-ostream &operator <<(ostream &output, set<long> &sa);
+std::ostream &operator <<(std::ostream &output, std::set<long> &sa);
 
 // Constructor
-Node::Node (string n) :
+Node::Node (std::string n) :
 	name_(n), action_(), start_(-1), end_(-1), var_use_(),
 	var_mod_(), func_(), func_map_(), is_assign_node_(false),
 	is_statement_node_(false), is_loop_or_cond_node_(false),
@@ -36,7 +36,7 @@ long Node::func_map (long v)
 }
 
 // Adds an action word to a node (actions come from database.cc)
-void Node::add_action (string s, long tn)
+void Node::add_action (std::string s, long tn)
 {
 	// 'start_' records the lowest tree node value in the tg node
 	if (start_ == -1) {
@@ -74,7 +74,7 @@ void Node::add_var_mod (long v)
 }
 
 // Adds multiple variable uses
-void Node::add_var_use (RVector<long> v)
+void Node::add_var_use (rstd::RVector<long> v)
 {
 	MAP (x, v.size()) {
 		var_use_.insert(v[x]);
@@ -82,7 +82,7 @@ void Node::add_var_use (RVector<long> v)
 }
 
 // Adds multiple variable uses and modifications
-void Node::add_var_mod (RVector<long> v)
+void Node::add_var_mod (rstd::RVector<long> v)
 {
 	MAP (x, v.size()) {
 		var_use_.insert(v[x]);
@@ -120,7 +120,7 @@ Edge::Edge (long v) :
 }
 
 // Constuctor
-TGraph::TGraph (string n) :
+TGraph::TGraph (std::string n) :
 	val_(-1), name_(n), time_unit_(), tree_node_starts_(), func_call_nodes_(), 
 	statement_nodes_(), loop_or_cond_nodes_()
 {
@@ -134,13 +134,13 @@ long TGraph::get_new_node (long id)
 	tmp--;
 
 	if (tmp < 0) {
-		add_vertex (Node (to_string(id) + "__" + to_string(++tmp)));
+		add_vertex (Node (rstd::to_string(id) + "__" + rstd::to_string(++tmp)));
 	} else {
-		RVector<string> svec = (*this)[tmp].action();
+		rstd::RVector<std::string> svec = (*this)[tmp].action();
 
 		// Code to only adds a node if the last one isn't empty
 		if (svec.size() != 0) {
-			add_vertex (Node (to_string(id) + "__" + to_string(++tmp)));
+			add_vertex (Node (rstd::to_string(id) + "__" + rstd::to_string(++tmp)));
 		}
 	}
 
@@ -153,8 +153,8 @@ void TGraph::make_depend_arcs ()
 	// For each node in TG
 	MAP (x, size_vertex()) {
 		// Get it's variable use set
-		set<long> xset = (*this)[x].var_use();
-		set<long> tmpset, intersect_set;
+		std::set<long> xset = (*this)[x].var_use();
+		std::set<long> tmpset, intersect_set;
 
 		// Look at previous nodes and find most recent modification
 		// of a variable in 'x' use set.
@@ -178,7 +178,7 @@ void TGraph::make_depend_arcs ()
 				}
 
 				// Update 'xset' based on new edge
-				set<long> new_xset;
+				std::set<long> new_xset;
 				set_difference(xset.begin(), xset.end(), 
 									intersect_set.begin(), intersect_set.end(),
 									inserter(new_xset, new_xset.begin()));
@@ -200,7 +200,7 @@ void TGraph::compact_graph()
 	long statement_end = -1;
 	long assign = -1;
 	long loop_cond = -1;
-	RVector<long> a, b;		// merge pair (a, b)
+	rstd::RVector<long> a, b;		// merge pair (a, b)
 
 	// If the last node is empty, remove it.
 	long vsize = size_vertex();
@@ -237,7 +237,7 @@ void TGraph::compact_graph()
 		if (nodes_linked (a[i], b[i])) {
 			merge_tasks (a[i], b[i]);
 		} else {
-			cout << "HEY: " << a << " " << b << endl;
+			std::cout << "HEY: " << a << " " << b << std::endl;
 		}
 	}
 
@@ -367,12 +367,12 @@ long TGraph::find_lc_node(long tn)
 }
 
 // Determines all vars used by the task graph for this function
-set<long> TGraph::determine_vars_touched()
+std::set<long> TGraph::determine_vars_touched()
 {
-   set<long> s;
+   std::set<long> s;
 	MAP (x, size_vertex()) {
 		// 'vs' is the list of vars touched by a given tg node
-      set<long> vs = (*this)[x].var_use();
+      std::set<long> vs = (*this)[x].var_use();
 		// At the end, the union is all the vars touched by the whole tg
       set_union(s.begin(), s.end(), vs.begin(), vs.end(),
             inserter(s, s.begin()));
@@ -393,10 +393,10 @@ void TGraph::set_time_unit (TimeUnit t)
 
 // Prints the graph structure information for the vcg file for
 // the tg for this function.
-void TGraph::print_vcg_inside (ofstream &out_file)
+void TGraph::print_vcg_inside (std::ofstream &out_file)
 {
 	MAP (x, size_vertex()) {
-		RVector<string> act = (*this)[x].action();
+		rstd::RVector<std::string> act = (*this)[x].action();
 
 		out_file << "  node: { title: \"" 
 			<< (*this)[x].name() << "\" label: \"";
@@ -424,8 +424,8 @@ void TGraph::print_vcg_inside (ofstream &out_file)
 // Checks if merging 'a' and 'b' would create a cycle
 bool TGraph::check_if_merge_forms_cycle (vertex_index a, vertex_index b)
 {
-	RVector<int> visited;
-	RVector<vertex_index> seen;
+	rstd::RVector<int> visited;
+	rstd::RVector<vertex_index> seen;
 	vertex_index v = a;
 
 	MAP (x, size_vertex())
@@ -463,7 +463,7 @@ int TGraph::merge_tasks(vertex_index a, vertex_index b)
 			correct_order=true;
 	}
 	if (!correct_order) {
-		cout <<"Can't merge " << a <<" "<< b 
+		std::cout <<"Can't merge " << a <<" "<< b 
 				<< " Must be (a->b) and adjacent\n";
 		exit (-1);
 	}
@@ -510,15 +510,15 @@ int TGraph::merge_tasks(vertex_index a, vertex_index b)
 // (Usually used before erasing the 'from' node in the calling funciton.)
 void TGraph::copy_vertex_data (vertex_index from, vertex_index to)
 {
-	RVector<string> act = (*this)[from].action();
+	rstd::RVector<std::string> act = (*this)[from].action();
 	long start_val = (*this)[from].start();
-	set<long> vu = (*this)[from].var_use();
-	set<long> vm = (*this)[from].var_mod();
+	std::set<long> vu = (*this)[from].var_use();
+	std::set<long> vm = (*this)[from].var_mod();
 
 	MAP (x, act.size()) {	
 		(*this)[to].add_action(act[x], start_val);
 	}
-	set<long>::iterator i;
+	std::set<long>::iterator i;
 	for (i = vu.begin(); i != vu.end(); i++) {
 		long t = *i;
 		(*this)[to].add_var_use(t);

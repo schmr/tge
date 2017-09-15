@@ -6,19 +6,19 @@
 #include <fstream>
 #include "database.h"
 
-void do_parse(string s);
+void do_parse(std::string s);
 /*###########################################################################*/
 int main(int argc, char *argv[]) {
 	try {
 		// read input arguments and store settings in one class
-		ArgPack::init(argc, argv, cout);
-		ofstream os_;
+		ArgPack::init(argc, argv, std::cout);
+		std::ofstream os_;
 
 		// generate a database to contain all processing information
 		DB single_db;
 
 		// get input filename and run lex and yacc (parse) it
-		string str = ArgPack::write_ap().get_fname();
+		std::string str = ArgPack::write_ap().get_fname();
 		do_parse(str);
 
 		// if interpret flag set, analyze program structure
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
 
 	// for error conditions
 	} catch (ArgPack::init_error & ie) {
-		cout << ie.what();
+		std::cout << ie.what();
 	}
 }
 

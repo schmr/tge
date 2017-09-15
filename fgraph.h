@@ -18,13 +18,13 @@
 #include <fstream>
 
 class FNode {
-	string name_;
+	std::string name_;
 	long index_;
 public:
-	FNode (string n, long i);
+	FNode (std::string n, long i);
 
-	string name() { return name_; }
-	const string name() const { return name_; }
+	std::string name() { return name_; }
+	const std::string name() const { return name_; }
 	long index() { return index_; }
 	const long index() const { return index_; }
 	
@@ -40,15 +40,15 @@ public:
 };
 
 
-class FGraph : public Graph<FNode, FEdge> {
+class FGraph : public rstd::Graph<FNode, FEdge> {
 	long val_;
-	RVector<set<long> > subtree_;
+	rstd::RVector<std::set<long> > subtree_;
 public:
 	FGraph();
 
 	bool in_subtree(long t, long n);
 	void setup_subtrees (long main_node);
-	void print_vcg_inside (ofstream &out_file);
+	void print_vcg_inside (std::ofstream &out_file);
 };
 
 #endif

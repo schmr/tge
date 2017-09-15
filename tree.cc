@@ -5,7 +5,7 @@
 #include "database.h"
 
 // utility function: stores values in 'a' or 'b' in 'out'
-void vector_merge (RVector<string> a, RVector<string> b,RVector<string> &out)
+void vector_merge (rstd::RVector<std::string> a, rstd::RVector<std::string> b,rstd::RVector<std::string> &out)
 {
 	out.clear();
 	MAP (x, a.size()) {
@@ -22,7 +22,7 @@ TreeNode::TreeNode () :
 {
 }
 
-TreeNode::TreeNode (string str, string space) :
+TreeNode::TreeNode (std::string str, std::string space) :
 	name_(str), whitespace_(space), subtree_size_(0), parent_(-1), children_()
 {
 }
@@ -39,7 +39,7 @@ long DB::get_next_literal (long tn)
 }
 
 // Returns first ancestor of node 'n' with name 's'
-long DB::get_ancestor (long n, string s)
+long DB::get_ancestor (long n, std::string s)
 {
 	long i = n;
 	while (tree_node_[i].parent() != -1) {
@@ -51,13 +51,13 @@ long DB::get_ancestor (long n, string s)
 }
 
 // Returns first child of 'n' which is a variable
-string DB::get_first_var_child (long n, long curr_function)
+std::string DB::get_first_var_child (long n, long curr_function)
 {
 	long i = n - tree_node_[n].subtree_size() + 1;
-	string ret_val;
+	std::string ret_val;
 
 	while (i < n) {
-		string str = create_var_name (tree_node_[i].name(), curr_function);
+		std::string str = create_var_name (tree_node_[i].name(), curr_function);
 		if ((var_map(str)) != -1) {
 			ret_val = str;
 			i = n;
@@ -69,20 +69,20 @@ string DB::get_first_var_child (long n, long curr_function)
 
 // generates a variable name with appropriate extension
 // __0 for globals, __# for local variables where # is the function number
-string DB::create_var_name (string s, long f)
+std::string DB::create_var_name (std::string s, long f)
 {
-	string tmp_str = s + "__" + to_string(0);
+	std::string tmp_str = s + "__" + rstd::to_string(0);
 
 	// first check if 's' is a global variable
 	if (var_map_.find(tmp_str) != var_map_.end()) {
 		return tmp_str;
 	} else {
-		return (s + "__" + to_string(f));
+		return (s + "__" + rstd::to_string(f));
 	}
 }
 
 // Return child index if node 'n' has a child with name 's'
-long DB::has_child (long n, string s)
+long DB::has_child (long n, std::string s)
 {
 	long i = n - tree_node_[n].subtree_size() + 1;
 
@@ -96,7 +96,7 @@ long DB::has_child (long n, string s)
 }
 
 // Get name of child 'c' of node 'n' (starts at 0)
-string DB::node_child_name (long n, long c)
+std::string DB::node_child_name (long n, long c)
 {
 	Rassert (c < (tree_node_[n].children()).size());
 	long t = tree_node_[n].child(c);
@@ -104,25 +104,25 @@ string DB::node_child_name (long n, long c)
 }
 
 // get the name the parent of node 'n' 
-string DB::node_parent_name (long n)
+std::string DB::node_parent_name (long n)
 {
 	if (tree_node_[n].parent() != -1) 
 		return tree_node_[tree_node_[n].parent()].name();
 	else
-		return (string(""));
+		return (std::string(""));
 }
 
 // adds a node to the abstract syntax tree (AST)
-void DB::add_tree_node (string str, int num_subtrees, string space)
+void DB::add_tree_node (std::string str, int num_subtrees, std::string space)
 {
-	RVector<long> node_list;
+	rstd::RVector<long> node_list;
 	tree_node_.push_back(TreeNode(str, space));
 
 	// These two lines find space for the new node
 	long last_node = tree_node_.size() - 1;
 	long size = 1;
 
-//cout << "\ntoken:(" << last_node << ")  " << str << endl;
+//std::cout << "\ntoken:(" << last_node << ")  " << str << std::endl;
 
 	// These lines determine the immediate children of the new node
 	// and the size of the whole subtree.  To accomplish this, get
@@ -154,13 +154,13 @@ void DB::interpret_tree()
 	long curr_function_end = 0;
 
 	// These 3 vectors record when we start/end analyzing a function call
-	RVector<long> func_call;
-	RVector<long> func_call_end;
-	RVector<string> func_call_name;
+	rstd::RVector<long> func_call;
+	rstd::RVector<long> func_call_end;
+	rstd::RVector<std::string> func_call_name;
 
-	//These strings store info on variable names and type info
-	string type, str;
-	RVector<string> stype_full, stype_one, stype_all;
+	//These std::strings store info on variable names and type info
+	std::string type, str;
+	rstd::RVector<std::string> stype_full, stype_one, stype_all;
 
 	// Add a special function for global definitions
 	func_def_name_list_.push_back("global_defs");
@@ -172,7 +172,7 @@ void DB::interpret_tree()
 	// and current state (variables listed above)
 	//**********************************************************
 	MAP (x, tree_node_.size()) {
-//cout << tree_node_[x].name() << endl;
+//std::cout << tree_node_[x].name() << std::endl;
 
 		/////////////////////////////
 		// Cleanup section goes first
@@ -220,7 +220,7 @@ void DB::interpret_tree()
 		} else if (tree_node_[x].name() == "struct") {
 			long next = get_next_literal(x);
 			if (tree_node_[get_next_literal(next)].name() == ";") {			
-//				cout << tree_node_[next].name() << endl;			
+//				std::cout << tree_node_[next].name() << std::endl;			
 				undefined_structs_.insert("struct " + tree_node_[next].name());
 			}
 
@@ -255,7 +255,7 @@ void DB::interpret_tree()
 
 			// don't count user-defined data types as variables!!!
 			} else if ((type_map_lookup(tree_node_[x].name())) != -1) {
-//				cout << tree_node_[x].name() << " DATA TYPE...not a variable\n";
+//				std::cout << tree_node_[x].name() << " DATA TYPE...not a variable\n";
 
 			// variable declaration
 			} else if ((a1 = get_ancestor (x, "declaration")) != -1) { 
@@ -265,15 +265,15 @@ void DB::interpret_tree()
 				if ((a2 = get_ancestor (x, "array_decl")) != -1) {
 					long tmp_x = x;
 					bool done = false;
-//					cout << "Array:  " << str << "  ";
+//					std::cout << "Array:  " << str << "  ";
 					while (!done) {
 						long tn = get_next_literal(tmp_x);
 						Rassert(tn != -1);
 						if (tree_node_[tn].name() == "[") {
 							tn = get_next_literal(tn);
-							long tmp_val = Conv(tree_node_[tn].name());
+							long tmp_val = rstd::Conv(tree_node_[tn].name());
 							arr_size *= tmp_val;
-//							cout << tree_node_[tn].name() << " ";
+//							std::cout << tree_node_[tn].name() << " ";
 							tn = get_next_literal(tn);
 
 // If calculation embedded in [], then just give up on guessing array size
@@ -286,7 +286,7 @@ void DB::interpret_tree()
 							done = true;
 						}
 					}
-//					cout << " is " << arr_size << endl;
+//					std::cout << " is " << arr_size << std::endl;
 				}
 				if ((type_map_lookup(str)) == -1) {
 					vector_merge(stype_one, stype_all, stype_full);
@@ -316,7 +316,7 @@ void DB::interpret_tree()
 					Rassert(fnum != -1);
 					add_func_call_arg(curr_function, fc_num, fnum, FUNC);
 				}
-				string fn_call_name = tree_node_[x].name();
+				std::string fn_call_name = tree_node_[x].name();
 				function_[curr_function].add_action(fn_call_name, FN_START, x);
 				func_call.push_back(
 							add_func_call(curr_function,fn_call_name,fn_call_root,x));
@@ -366,20 +366,20 @@ void DB::interpret_tree()
 			if (curr_function) {
 				function_[curr_function].add_action("assign_end", ASSIGN_END, x);
 			}
-			pair <long, long> p (x - tree_node_[x].subtree_size(), x);
+			std::pair <long, long> p (x - tree_node_[x].subtree_size(), x);
 			function_[curr_function].add_assign_node (p);
 
 		// end of a statement
 		} else if (tree_node_[x].name() == "statement") {
 			if (curr_function) {
 				function_[curr_function].add_action("statement_end",STATE_END,x);
-				function_[curr_function].add_action("#"+to_string(x),STATE_NUM,x);
+				function_[curr_function].add_action("#"+rstd::to_string(x),STATE_NUM,x);
 			}
 
 		// ++/-- bindings
 		} else if (tree_node_[x].name() == "short_assign_op") {
 			Rassert(curr_function);
-			string op_target = get_first_var_child(x, curr_function);
+			std::string op_target = get_first_var_child(x, curr_function);
 			function_[curr_function].add_action(op_target, SHORT_ASSIGN_VAR, x);
 
 		// separates sources and targets of assignments
@@ -459,14 +459,14 @@ void DB::print_annotated_c ()
 	// for printing new_cfile
 	long fdnl_num = 0;
 	bool in_global_def = true;
-	string newc_str;
+	std::string newc_str;
 	long stack = 0;
 	long prev_str_x = -1;
 	bool sflag = false;
 
 	// Open output file for annotated c code output
-	ofstream new_cfile;
-	string str = ArgPack::ap().get_fname() + "_new.c";
+	std::ofstream new_cfile;
+	std::string str = ArgPack::ap().get_fname() + "_new.c";
 	new_cfile.open(str.c_str());
 	Rassert(new_cfile);
 
@@ -502,19 +502,19 @@ void DB::print_annotated_c ()
 
 					if (ArgPack::ap().calculate_edge_lengths()) {
 						MAP (y, variable_.size()) {
-							string tmp_s = variable_[y].type();
+							std::string tmp_s = variable_[y].type();
 							if (!tmp_s.empty()) {
 								if (undefined_structs_.find(tmp_s) ==
 										undefined_structs_.end()) {
 									new_cfile << "fprintf(KSVfout, \"" << tmp_s.c_str()
 												<< " %d\\n\", sizeof(" << tmp_s.c_str();
-									new_cfile << "));\n" << endl;
+									new_cfile << "));\n" << std::endl;
 								}
 							}
 						}
 					}
 					new_cfile << "fprintf (KSVfout,\"KSV type_size complete"
-								<< "\\n\");\n" << endl;
+								<< "\\n\");\n" << std::endl;
 					new_cfile << "fclose(KSVfout);\n";
 					new_cfile << "\nKSVinit_time();\n";
 					new_cfile << "atexit(KSVend_time);\n";
@@ -534,7 +534,7 @@ void DB::print_annotated_c ()
 			stack--;
 		} 
 
-		string full_str;
+		std::string full_str;
 		if (!in_global_def) {
 			full_str = func_def_name_list_[fdnl_num] + " " + newc_str;
 		}
@@ -572,15 +572,15 @@ void DB::print_annotated_c ()
 void DB::print_task_graph_c ()
 {
 	// Open output file for annotated c code output
-	ofstream new_cfile;
-	string str = ArgPack::ap().get_fname() + "_tg.c";
+	std::ofstream new_cfile;
+	std::string str = ArgPack::ap().get_fname() + "_tg.c";
 	new_cfile.open(str.c_str());
 	Rassert(new_cfile);
 
 	long fdnl_num = 0;
 	bool in_global_def = true;
-	string newc_str;
-	RVector<long> starts;
+	std::string newc_str;
+	rstd::RVector<long> starts;
 	long starts_index = 0;
 
 	MAP (x, tree_node_.size()) {
@@ -612,7 +612,7 @@ void DB::print_task_graph_c ()
 			}
 		} 
 
-		string full_str;
+		std::string full_str;
 
 		// Prints out original code w/ original whitespace (minus comments)
 		if (tree_node_[x].subtree_size() == 1) {
@@ -627,19 +627,19 @@ void DB::print_terminals () const
 {
 	MAP (x, tree_node_.size()) {
 		if (tree_node_[x].subtree_size() == 1)
-			cout << tree_node_[x].name() << endl;
+			std::cout << tree_node_[x].name() << std::endl;
 	}
 }
 
 // prints the abstract syntax tree (AST) in vcg format so it can be seen
 void DB::print_tree_vcg () const
 {
-	ofstream out;
-	string file_name = ArgPack::ap().get_fname() + ".vcg";
+	std::ofstream out;
+	std::string file_name = ArgPack::ap().get_fname() + ".vcg";
 	out.open(file_name.c_str());
 
 	if (!out) {
-		cout << "Cannot open output file";
+		std::cout << "Cannot open output file";
 		Rabort();
 	}
 
@@ -649,7 +649,7 @@ void DB::print_tree_vcg () const
 		out << "  node: { title: \""
 			<< x << "\" label: \"";
 
-		string s = tree_node_[x].name();
+		std::string s = tree_node_[x].name();
 		if (s[0] == '"') {
 			out << "\\\"";
 		} else if (s[0] == '\\') {
